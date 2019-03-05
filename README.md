@@ -11,7 +11,7 @@ Xuhan Liu (First Author): x.liu@lacdr.leidenuniv.nl
 
 or
 
-Gerard J.P. van Westen (Corespondent Author): gerard@lacdr.leidenuniv.nl
+Gerard J.P. van Westen (Correspondent Author): gerard@lacdr.leidenuniv.nl
 
 
 Introduction
