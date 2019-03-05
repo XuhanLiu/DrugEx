@@ -7,11 +7,11 @@ By Xuhan Liu & Gerard J.P. van Westen, on November 1st 2018
 
 Please see the LICENSE file for the license terms for the software. Basically it's free to academic users. If you do wish to sell the software or use it in a commercial product, then please contact the following E-mails,
 
-Xuhan Liu (First Author): x.liu@lacdr.leidenuniv.nl 
+    Xuhan Liu (First Author): x.liu@lacdr.leidenuniv.nl 
 
-or
+    or
 
-Gerard J.P. van Westen (Correspondent Author): gerard@lacdr.leidenuniv.nl
+    Gerard J.P. van Westen (Correspondent Author): gerard@lacdr.leidenuniv.nl
 
 
 Introduction
