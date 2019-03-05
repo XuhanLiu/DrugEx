@@ -1,4 +1,7 @@
-import torch as T
+#!/usr/bin/env python
+# This script provides the common methods and data structures that
+# are generally used in the project
+import torch
 from torch.utils.data import Dataset
 import re
 import pandas as pd
@@ -6,25 +9,51 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit import DataStructs
-from sklearn.preprocessing import MinMaxScaler
+from rdkit import rdBase
 import os
 from sklearn.externals import joblib
+from rdkit.Chem.Scaffolds import MurckoScaffold
+
+torch.set_num_threads(1)
+rdBase.DisableLog('rdApp.error')
+# designate the device that the PyTorch is allowed to use.
+dev = torch.device('cuda')
 
 
 class Voc(object):
-    def __init__(self, init_from_file=None, max_len=100):
+    """ Vocabulary Class for all of the tokens for SMILES string construction.
+    It also provides the method to encode SMILES string into the index array of tokens
+    and decode the index array into the SMILES string.
+
+    Arguments:
+        path (str): the path of vocabulary file that contains all of the tokens split by '\n'
+    """
+    def __init__(self, path, max_len=100):
         self.chars = ['EOS', 'GO']
-        if init_from_file: self.init_from_file(init_from_file)
+        if path is not None and os.path.exists(path):
+            f = open(path, 'r')
+            chars = f.read().split()
+            assert len(set(chars)) == len(chars)
+            self.chars += chars
         self.size = len(self.chars)
-        self.vocab = dict(zip(self.chars, range(len(self.chars))))
-        self.reversed_vocab = {v: k for k, v in self.vocab.items()}
+        # dict -> {token: index} for encoding
+        self.tk2ix = dict(zip(self.chars, range(len(self.chars))))
+        # dict -> {index: token} for decoding
+        self.ix2tk = {v: k for k, v in self.tk2ix.items()}
         self.max_len = max_len
 
     def tokenize(self, smile):
-        """Takes a SMILES and return a list of characters/tokens"""
+        """Transform a SMILES string into a series of tokens
+        Arguments:
+            smile (str): SMILES string with correct grammar
+
+        Returns:
+             tokens (list): the list of tokens that are contained in the vocabulary
+        """
         regex = '(\[[^\[\]]{1,6}\])'
         smile = re.sub('\[\d+', '[', smile)
-        smile = replace_halogen(Chem.CanonSmiles(smile, 0))
+        smile = Chem.CanonSmiles(smile, 0)
+        smile = smile.replace('Cl', 'L').replace('Br', 'R')
         tokens = []
         for word in re.split(regex, smile):
             if word == '' or word is None: continue
@@ -36,33 +65,50 @@ class Voc(object):
         tokens.append('EOS')
         return tokens
 
-    def encode(self, char_list):
-        """Takes a list of characters (eg '[NH]') and encodes to array of indices"""
-        smiles_matrix = T.zeros(len(char_list))
-        for i, char in enumerate(char_list):
-            smiles_matrix[i] = self.vocab[char]
-        return smiles_matrix
+    def encode(self, tokens):
+        """ Encoding a series of tokens into a SMILES string
 
-    def decode(self, matrix):
-        """Takes an array of indices and returns the corresponding SMILES"""
+        Arguments：
+            tokens (list): a series of tokens. Commonly, it is the output of
+                the "tokenize" method.
+        Returns:
+            arr (LongTensor): a long tensor storing the indices of all tokens for one SMILES
+s        """
+        arr = torch.zeros(len(tokens)).long()
+        for i, char in enumerate(tokens):
+            arr[i] = self.tk2ix[char]
+        return arr
+
+    def decode(self, arr):
+        """Takes an array of indices and returns the corresponding SMILES
+
+        Arguments:
+            arr (LongTensor): LongTensor stores the indices of all tokens for one SMILES
+
+        Returns:
+            smile (str): decoded SMILES string
+        """
         chars = []
-        for i in matrix:
-            if i == self.vocab['EOS']: break
-            chars.append(self.reversed_vocab[i])
-        smiles = "".join(chars)
-        smiles = smiles.replace('L', 'Cl').replace('R', 'Br')
-        return smiles
-
-    def init_from_file(self, file):
-        """Takes a file containing \n separated characters to initialize the vocabulary"""
-        with open(file, 'r') as f:
-            chars = f.read().split()
-            assert len(set(chars)) == len(chars)
-            self.chars += chars
+        for i in arr.cpu().numpy():
+            if i == self.tk2ix['EOS']: break
+            chars.append(self.ix2tk[i])
+        smile = "".join(chars)
+        smile = smile.replace('L', 'Cl').replace('R', 'Br')
+        return smile
 
 
 class MolData(Dataset):
-    """Custom PyTorch Dataset that takes a file containing \n separated SMILES"""
+    """Custom PyTorch Dataset that takes a file containing separated SMILES
+
+    Arguments:
+        df (str or DataFrame): it is file path of dataset if it is str;
+            this data frame contains the column of CANONICAL_SMILES
+        voc (Voc): the instance of Voc for SMILES token vocabulary
+        token (str, optional): the column name in df for tokens;
+            this is for time-saving if the SMILES can be transformed into a series of tokens
+            and be saved into table, the "tokenize" step which is quite time-consuming can
+            be ignored. (Default: None)
+    """
     def __init__(self, df, voc, token=None):
         self.voc = voc
         if isinstance(df, str) and os.path.exists(df):
@@ -91,8 +137,7 @@ class MolData(Dataset):
     @classmethod
     def collate_fn(cls, arr, max_len=100):
         """Function to take a list of encoded sequences and turn them into a batch"""
-        # max_length = max([seq.size(0) for seq in arr])
-        collated_arr = T.zeros(len(arr), max_len).long()
+        collated_arr = torch.zeros(len(arr), max_len).long()
         for i, seq in enumerate(arr):
             collated_arr[i, :seq.size(0)] = seq
         return collated_arr
@@ -100,11 +145,10 @@ class MolData(Dataset):
 
 class QSARData(Dataset):
     """Custom PyTorch Dataset that takes a file containing \n separated SMILES"""
-
     def __init__(self, voc, ligand):
         self.voc = voc
         self.smile = [voc.encode(voc.tokenize(i)) for i in ligand['CANONICAL_SMILES']]
-        self.label = T.Tensor((ligand['PCHEMBL_VALUE'] >= 6.5).astype(float).values)
+        self.label = torch.Tensor((ligand['PCHEMBL_VALUE'] >= 6.5).values).float()
 
     def __getitem__(self, i):
         return self.smile[i], self.label[i]
@@ -115,79 +159,96 @@ class QSARData(Dataset):
     def collate_fn(self, arr):
         """Function to take a list of encoded sequences and turn them into a batch"""
         max_len = max([item[0].size(0) for item in arr])
-        smile_arr = T.zeros(len(arr), max_len).long()
-        label_arr = T.zeros(len(arr), 1)
+        smile_arr = torch.zeros(len(arr), max_len).long()
+        label_arr = torch.zeros(len(arr), 1)
         for i, data in enumerate(arr):
             smile_arr[i, :data[0].size(0)] = data[0]
             label_arr[i, :] = data[1]
         return smile_arr, label_arr
 
 
-def replace_halogen(smile):
-    """Regex to replace Br and Cl with single letters"""
-    smile = smile.replace('Br', 'R').replace('Cl', 'L')
-    return smile
+class Environment:
+    """Vitural environment that provided the reward for each molecule
+    based on an ECFP predictor for activity.
 
-
-def Variable(tensor):
-    """Wrapper for torch.autograd.Variable that also accepts
-       numpy arrays directly and automatically assigns it to
-       the GPU. Be aware in case some operations are better
-       left to the CPU."""
-    if isinstance(tensor, np.ndarray):
-        tensor = T.from_numpy(tensor)
-    if isinstance(tensor, list):
-        tensor = T.Tensor(tensor)
-    return cuda(T.autograd.Variable(tensor))
-
-
-def cuda(var):
-    if T.cuda.is_available():
-        return var.cuda()
-    return var
-
-
-class Activity:
-    """Scores based on an ECFP classifier for activity."""
-    def __init__(self, clf_path, radius=3, bit_len=4096):
-        self.clf_path = clf_path
+    Arguments:
+        env_path (str): the file path of predictor.
+        radius (int): the radius parameter of ECFP
+        bit_len (int): the the vector length of ECFP
+        is_reg (bool, optional): regresstion (True) or classification (False) model (Default: False)
+    """
+    def __init__(self, env_path, radius=3, bit_len=4096, is_reg=False):
+        self.clf_path = env_path
         self.clf = joblib.load(self.clf_path)
         self.radius = radius
         self.bit_len = bit_len
+        self.is_reg = is_reg
 
     def __call__(self, smiles):
         fps = self.ECFP_from_SMILES(smiles)
-        preds = self.clf.predict_proba(fps)[:, 1]
+        if self.is_reg:
+            preds = self.clf.predict(fps)
+        else:
+            preds = self.clf.predict_proba(fps)[:, 1]
         return preds
 
     @classmethod
-    def ECFP_from_SMILES(cls, smiles, radius=3, bit_len=4096):
+    def ECFP_from_SMILES(cls, smiles, radius=3, bit_len=4096, scaffold=0, index=None):
         fps = np.zeros((len(smiles), bit_len))
         for i, smile in enumerate(smiles):
             mol = Chem.MolFromSmiles(smile)
-            if mol is None:
-                fps[i, :] = [0] * bit_len
-            else:
-                arr = np.zeros((1,))
+            arr = np.zeros((1,))
+            try:
+                if scaffold == 1:
+                    mol = MurckoScaffold.GetScaffoldForMol(mol)
+                elif scaffold == 2:
+                    mol = MurckoScaffold.MakeScaffoldGeneric(mol)
                 fp = AllChem.GetMorganFingerprintAsBitVect(mol, radius, nBits=bit_len)
                 DataStructs.ConvertToNumpyArray(fp, arr)
                 fps[i, :] = arr
-        return fps
+            except:
+                print(smile)
+                fps[i, :] = [0] * bit_len
+        return pd.DataFrame(fps, index=(smiles if index is None else index))
 
 
 def check_smiles(seqs, voc):
+    """Decoding the indices LongTensor into a list of SMILES string
+    and checking whether they can be correctly parsed into molecule by RDKit
+
+    Arguments:
+        seqs (LongTensor): m X n indices LongTensor, generally it is the output of RNN sampling.
+            m is No. of samples; n is the value of max_len in voc
+        voc (Voc): the instance of Voc for the SMILES token vocabulary.
+
+    Returns:
+        smiles (list): a list of decoded SMILES string.
+        valids (ndarray): each value in this array is np.byte type and indicates
+            whether the counterpart is grammar correct SMILES or not.
+    """
     valids = []
     smiles = []
     for j, seq in enumerate(seqs.cpu()):
         smile = voc.decode(seq)
         valids.append(1 if Chem.MolFromSmiles(smile) else 0)
         smiles.append(smile)
-    return smiles, np.array(valids, dtype=np.byte)
+    valids = np.array(valids, dtype=np.byte)
+    return smiles, valids
 
 
 def unique(arr):
-    # Finds unique rows in arr and return their indices
+    """Removing the duplicated row of indices and only reserving the unique rows for decoding
+
+    Arguments:
+        arr (LongTensor): m X n indices LongTensor. Generally it is the output of RNN sampling.
+            m is No. of samples; n is the value of max_len in voc
+
+    Returns:
+        indices (LongTensor): l X n indices LongTensor without any repetitive rows.
+            n is No. of samples; n is the value of max_len in voc
+    """
     arr = arr.cpu().numpy()
     arr_ = np.ascontiguousarray(arr).view(np.dtype((np.void, arr.dtype.itemsize * arr.shape[1])))
-    _, idxs = np.unique(arr_, return_index=True)
-    return cuda(T.LongTensor(np.sort(idxs)))
+    _, indices = np.unique(arr_, return_index=True)
+    indices = torch.LongTensor(np.sort(indices)).to(dev)
+    return indices
