@@ -61,7 +61,8 @@ For designing the novel drug molecules with SMILES representation, you should do
         fine-tuning the same RNN model as exploration network which will be fixed as an pertubation to enlarge the diversity.
     4. agent.py: 
         training the DrugEx model under the reinforcement learning framework. During the training process, both of the  
-        exploitation and exploitation network will be involved in the SMILES generation, and the exploration rate controls the contribution that exploration network makes.
+        exploitation and exploitation network will be involved in the SMILES generation, and the exploration rate 
+        controls the contribution that exploration network makes.
     5. designer.py:
         Finally, generating the SMILES format molecules with well-trained RNN model (pre-trained/fine-tuned model or DrugEx model).
     6. figure.py:
