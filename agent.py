@@ -138,8 +138,6 @@ def main():
         # Learing rate exponential decay
         for param_group in agent.optim.param_groups:
             param_group['lr'] *= (1 - 0.01)
-        # if EX > 0.01:
-        #     EX = EX * (1 - 0.01)
     log.close()
 
 
