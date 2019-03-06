@@ -138,8 +138,6 @@ def main():
         # Learing rate exponential decay
         for param_group in agent.optim.param_groups:
             param_group['lr'] *= (1 - 0.01)
-        # if EX > 0.01:
-        #     EX = EX * (1 - 0.01)
     log.close()
 
 
@@ -150,8 +148,8 @@ if __name__ == "__main__":
     MC = 10
     opts, args = getopt.getopt(sys.argv[1:], "e:b:g:")
     OPT = dict(opts)
-    Epsilon = 0.1 if 'e' not in OPT else float(OPT['-e'])
-    Baseline = 0.1 if 'b' not in OPT else float(OPT['-b'])
-    if 'g' in OPT:
+    Epsilon = 0.1 if '-e' not in OPT else float(OPT['-e'])
+    Baseline = 0.1 if '-b' not in OPT else float(OPT['-b'])
+    if '-g' in OPT:
         os.environ["CUDA_VISIBLE_DEVICES"] = OPT['-g']
     main()
