@@ -20,16 +20,16 @@ Over the last five years deep learning has progressed tremendously in both image
 
 Workflow
 ========
-![Fig1](figure/Figure_2.tif)
+![Fig1](figure/Figure_2.png)
 
 
 Exploration Strategy
 ====================
-![Fig2](figure/Figure_3.tif)
+![Fig2](figure/Figure_3.png)
 
 Examples
 =========
-![Fig3](figure/Figure_11.tif)
+![Fig3](figure/Figure_11.png)
 
 Dependencies
 ============
