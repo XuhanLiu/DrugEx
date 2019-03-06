@@ -51,24 +51,23 @@ Usage
 For designing the novel drug molecules with SMILES representation, you should do the following steps sequentially by running scripts:
 
     1. dataset.py: 
-        preparing your dataset for pre-training and fine-tuning the RNN model as initialization of exploitation network 
-        and exploration network.
+        preparing your dataset for pre-training and fine-tuning the RNN model as initial states of exploitation 
+        network and exploration network.
     2. environ.py:
-        training your predictor as the environment for providing the final reward for the action from the agent. the 
-        performance can also be evaluated through n-fold cross validation and independent test. 
+        training your predictor as the environment for providing the final reward for the action from the agent. 
+        The performance can also be evaluated through n-fold cross validation and independent test. 
     3. pretrainer.py:
         pre-training the RNN model as initialization of exploitation network which will be as agent for molecule design.
-        fine-tuning the same RNN model as exploration network which will be fixed as an pertubation to enlarge the diversity.
+        fine-tuning the same RNN model as exploration network which will be fixed as an pertubation to enlarge the 
+        diversity.
     4. agent.py: 
-        training the DrugEx model under the reinforcement learning framework. During the training process, both of the  
-        exploitation and exploitation network will be involved in the SMILES generation, and the exploration rate 
+        training the DrugEx model under the reinforcement learning framework. During the training process, both of 
+        the exploitation and exploitation network will be involved in the SMILES generation, and the exploration rate 
         controls the contribution that exploration network makes.
     5. designer.py:
-        Finally, generating the SMILES format molecules with well-trained RNN model (pre-trained/fine-tuned model or DrugEx model).
-    6. figure.py:
-        It provides a variety of the methods to measure the performance of every step during the training process of DrugEx, 
-        and form the figure for results visualization. 
-
+        Finally, generating the SMILES format molecules with well-trained RNN model (pre-trained/fine-tuned model 
+        or DrugEx model).
+        
 In addition, this toolkit also provides some other scripts for definition of special data structures, model architectures and coefficient measurements, etc.
 
     1. model.py:
@@ -79,6 +78,10 @@ In addition, this toolkit also provides some other scripts for definition of spe
         and some methods for SMILES checking. 
     3. metric.py:
         The statistical methods that extracting properties from generated molecules.
+    4. figure.py:
+        It provides a variety of the methods to measure the performance of every step during the training process of 
+        DrugEx, and form the figure for results visualization. 
+
         
 
 References
