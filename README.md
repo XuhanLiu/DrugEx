@@ -51,17 +51,17 @@ Usage
 For designing the novel drug molecules with SMILES representation, you should do the following steps sequentially by running scripts:
 
     1. dataset.py: 
-        preparing your dataset for pre-training and fine-tuning the RNN model as initial states of exploitation 
+        Preparing your dataset for pre-training and fine-tuning the RNN model as initial states of exploitation 
         network and exploration network.
     2. environ.py:
-        training your predictor as the environment for providing the final reward for the action from the agent. 
+        Training your predictor as the environment for providing the final reward for the action from the agent. 
         The performance can also be evaluated through n-fold cross validation and independent test. 
     3. pretrainer.py:
-        pre-training the RNN model as initialization of exploitation network which will be as agent for molecule design.
-        fine-tuning the same RNN model as exploration network which will be fixed as an pertubation to enlarge the 
+        Pre-training the RNN model as initialization of exploitation network acted as agent for molecule design.
+        Fine-tuning the same RNN model as exploration network which will be fixed as an pertubation to enlarge the 
         diversity.
     4. agent.py: 
-        training the DrugEx model under the reinforcement learning framework. During the training process, both of 
+        Training the DrugEx model under the reinforcement learning framework. During the training process, both of 
         the exploitation and exploitation network will be involved in the SMILES generation, and the exploration rate 
         controls the contribution that exploration network makes.
     5. designer.py:
