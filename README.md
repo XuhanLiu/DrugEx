@@ -92,4 +92,7 @@ https://doi.org/10.26434/chemrxiv.7436789.v2
 
 Acknowledgement
 ===============
-We thank the code of REINVENT at https://github.com/MarcusOlivecrona/REINVENT gave me a lot of inspirations.
+We thank the following Git repositories that gave me a lot of inspirations:
+   
+      REINVENT    https://github.com/MarcusOlivecrona/REINVENT
+      ORGAN       https://github.com/gablg1/ORGAN
