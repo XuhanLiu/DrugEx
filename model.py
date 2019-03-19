@@ -250,7 +250,8 @@ class Generator(nn.Module):
         self.embed_size = embed_size
         self.hidden_size = hidden_size
         self.output_size = voc.size
-
+        self.is_lstm = is_lstm
+        
         self.embed = nn.Embedding(voc.size, embed_size)
         if is_lstm:
             self.rnn = nn.LSTM(embed_size, hidden_size, num_layers=3, batch_first=True)
