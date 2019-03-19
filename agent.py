@@ -38,8 +38,9 @@ def Policy_gradient(agent, environ, explore=None):
     preds = environ(smiles)
     preds[valids == False] = 0
     preds -= Baseline
+    preds = torch.Tensor(preds.reshape(-1, 1)).to(util.dev)
 
-    ds = TensorDataset(seqs, torch.Tensor(preds.reshape(-1, 1)))
+    ds = TensorDataset(seqs, preds)
     loader = DataLoader(ds, batch_size=BATCH_SIZE)
 
     # Training Loop
