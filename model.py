@@ -200,7 +200,7 @@ class MTFullyConnected(Base):
             # loss function and activation function of output layer for multiple classification
             self.criterion = nn.BCELoss()
             self.activation = nn.Sigmoid()
-        util.cuda(self)
+        self.to(util.dev)
 
     def forward(self, X, istrain=False):
         """Invoke the class directly as a function
