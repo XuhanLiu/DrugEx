@@ -112,7 +112,7 @@ class Base(nn.Module):
         """
         score = []
         for Xb, yb in loader:
-            Xb = Xb.to(util.dev).numpy()
+            Xb = Xb.to(util.dev)
             y_ = self.forward(Xb)
             score.append(y_.detach().cpu())
         score = torch.cat(score, dim=0).numpy()
