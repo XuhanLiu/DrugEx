@@ -289,7 +289,7 @@ def fig11():
                 print(sample.values)
                 mols += [Chem.MolFromSmiles(smile) for smile in sample.CANONICAL_SMILES]
     img = Draw.MolsToGridImage(mols, molsPerRow=5, subImgSize=(400, 300))
-    img.save('Figure_11.tif' % (dist))
+    img.save('Figure_11_%f.tif' % (dist))
 
 
 def figS1():
