@@ -1,13 +1,15 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import os
+
+import numpy as np
+import pandas as pd
 import torch as T
 from rdkit import rdBase
-import numpy as np
-import model
-import util
-import os
-import pandas as pd
 from torch.utils.data import DataLoader, TensorDataset
 
+from drugex import model, util
 
 rdBase.DisableLog('rdApp.error')
 T.set_num_threads(1)

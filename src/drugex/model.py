@@ -1,14 +1,20 @@
 #!/usr/bin/env python
-# This file defined all of the architectures of deep neural networks (DNN)
-# that are used in this project similar to Scikit-learn style.
-# All of the DNN models are implemented by Pytorch ( >= version 1.0)
+# -*- coding: utf-8 -*-
+
+"""This file defined all of the architectures of deep neural networks (DNN)
+that are used in this project similar to Scikit-learn style.
+
+All of the DNN models are implemented by Pytorch ( >= version 1.0).
+"""
+
+import time
+
 import numpy as np
 import torch
-from torch import nn
-from torch import optim
+from torch import nn, optim
 from torch.nn import functional as F
-import time
-import util
+
+from drugex import util
 
 
 class Base(nn.Module):
@@ -490,5 +496,3 @@ class Discriminator(Base):
     def init_parameters(self):
         for param in self.parameters():
             param.data.uniform_(-0.05, 0.05)
-
-

@@ -1,21 +1,19 @@
 #!/usr/bin/env python
-# This script is used for measuring some coefficients of the molecules
+# -*- coding: utf-8 -*-
 
-from rdkit import Chem
-from rdkit.Chem import AllChem
-import pandas as pd
-from rdkit import DataStructs
+"""This script is used for measuring some coefficients of the molecules."""
+
 import numpy as np
-from rdkit.Chem import Crippen
-from rdkit.Chem import Descriptors as desc
-from rdkit.Chem import Lipinski
-from rdkit.Chem import MolSurf
-import util
-from tqdm import tqdm
+import pandas as pd
+from rdkit import Chem, DataStructs
+from rdkit.Chem import AllChem, Crippen, Descriptors as desc, Lipinski, MolSurf
+from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
-from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler as Scaler
+from tqdm import tqdm
+
+from drugex import util
 
 
 def converage(fnames):

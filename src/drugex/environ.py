@@ -1,25 +1,28 @@
 #!/usr/bin/env python
-# This module is mainly for environment (predictor) construction.
-# It contains machine learning (ML) training, cross validation and independent set test.
-# The traditional ML models are implemented by using Scikit-Learn (version >= 0.18)
+# -*- coding: utf-8 -*-
+
+"""This module is mainly for environment (predictor) construction.
+
+It contains machine learning (ML) training, cross validation and independent set test.
+The traditional ML models are implemented by using Scikit-Learn (version >= 0.18)
+"""
+
+import os
 
 import numpy as np
 import pandas as pd
 import torch as T
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+from sklearn.model_selection import GridSearchCV, KFold, StratifiedKFold
 from sklearn.naive_bayes import GaussianNB
-from sklearn.model_selection import GridSearchCV
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.svm import SVC, SVR
-from sklearn.model_selection import StratifiedKFold, KFold
 from torch.utils.data import DataLoader, TensorDataset
-import model
-import os
-import util
-from sklearn.externals import joblib
+
+from drugex import model, util
 
 
-def DNN(X, y, X_ind, y_ind, out, is_reg=False):
+def DNN(X, y, X_ind, y_ind, out, is_reg=False, *, batch_size, n_epoch, lr):
     """Cross Validation and independent set test for fully connected deep neural network
 
     Arguments:
@@ -49,16 +52,16 @@ def DNN(X, y, X_ind, y_ind, out, is_reg=False):
         folds = StratifiedKFold(5).split(X, y[:, 0])
         NET = model.STFullyConnected
     indep_set = TensorDataset(T.Tensor(X_ind), T.Tensor(y_ind))
-    indep_loader = DataLoader(indep_set, batch_size=BATCH_SIZE)
+    indep_loader = DataLoader(indep_set, batch_size=batch_size)
     cvs = np.zeros(y.shape)
     inds = np.zeros(y_ind.shape)
     for i, (trained, valided) in enumerate(folds):
         train_set = TensorDataset(T.Tensor(X[trained]), T.Tensor(y[trained]))
-        train_loader = DataLoader(train_set, batch_size=BATCH_SIZE)
+        train_loader = DataLoader(train_set, batch_size=batch_size)
         valid_set = TensorDataset(T.Tensor(X[valided]), T.Tensor(y[valided]))
-        valid_loader = DataLoader(valid_set, batch_size=BATCH_SIZE)
+        valid_loader = DataLoader(valid_set, batch_size=batch_size)
         net = NET(X.shape[1], y.shape[1], is_reg=is_reg)
-        net.fit(train_loader, valid_loader, out='%s_%d' % (out, i), epochs=N_EPOCH, lr=LR)
+        net.fit(train_loader, valid_loader, out='%s_%d' % (out, i), epochs=n_epoch, lr=lr)
         cvs[valided] = net.predict(valid_loader)
         inds += net.predict(indep_loader)
     cv, ind = y == y, y_ind == y_ind
@@ -216,7 +219,7 @@ def NB(X, y, X_ind, y_ind):
 
 
 # Model performance and saving
-def main(feat, alg='RF', reg=False):
+def main(feat, alg='RF', reg=False, *, batch_size, n_epoch, lr):
     pair = ['CMPD_CHEMBLID', 'CANONICAL_SMILES', 'PCHEMBL_VALUE', 'ACTIVITY_COMMENT']
     df = pd.read_table('data/CHEMBL251.txt')
     df = df[pair].set_index(pair[0])
@@ -260,7 +263,7 @@ def main(feat, alg='RF', reg=False):
     elif alg == 'NB':
         cv, ind = NB(X, y[:, 0], X, y[:, 0])
     elif alg == 'DNN':
-        cv, ind = DNN(X, y, X, y, out=out, is_reg=reg)
+        cv, ind = DNN(X, y, X, y, out=out, is_reg=reg, batch_size=batch_size, n_epoch=n_epoch, lr=lr)
     else:
         cv, ind = RF(X, y[:, 0], X, y[:, 0], is_reg=reg)
     data['SCORE'], test['SCORE'] = cv, ind
@@ -268,11 +271,15 @@ def main(feat, alg='RF', reg=False):
     test.to_csv(out + '.ind.txt', index=None)
 
 
-if __name__ == '__main__':
-    BATCH_SIZE = 1024
-    N_EPOCH = 1000
+def more_main():
+    batch_size = 1024
+    n_epoch = 1000
     T.set_num_threads(1)
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-    LR = 1e-5
+    lr = 1e-5
 
-    main('ecfp6', 'DNN', reg=False)
+    main('ecfp6', 'DNN', reg=False, batch_size=batch_size, n_epoch=n_epoch, lr=lr)
+
+
+if __name__ == '__main__':
+    more_main()

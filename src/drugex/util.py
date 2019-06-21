@@ -1,18 +1,19 @@
 #!/usr/bin/env python
-# This script provides the common methods and data structures that
-# are generally used in the project
-import torch
-from torch.utils.data import Dataset
-import re
-import pandas as pd
-import numpy as np
-from rdkit import Chem
-from rdkit.Chem import AllChem
-from rdkit import DataStructs
-from rdkit import rdBase
+# -*- coding: utf-8 -*-
+
+"""This script provides the common methods and data structures that are generally used in the project."""
+
 import os
-from sklearn.externals import joblib
+import re
+
+import numpy as np
+import pandas as pd
+import torch
+from rdkit import Chem, DataStructs, rdBase
+from rdkit.Chem import AllChem
 from rdkit.Chem.Scaffolds import MurckoScaffold
+from sklearn.externals import joblib
+from torch.utils.data import Dataset
 
 torch.set_num_threads(1)
 rdBase.DisableLog('rdApp.error')

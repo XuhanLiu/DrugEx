@@ -1,14 +1,23 @@
 #!/usr/bin/env python
-# This file is used for dataset construction, it contains two dataset as follows:
-# 1. ZINC set: it is used for pre-training model
-# 2. A2AR set: it is used for fine-tuning model and training predictor
+# -*- coding: utf-8 -*-
+
+"""This file is used for dataset construction.
+
+It contains two dataset as follows:
+
+1. ZINC set: it is used for pre-training model
+2. A2AR set: it is used for fine-tuning model and training predictor
+"""
+
+import os
+import re
+
+import numpy as np
 import pandas as pd
 from rdkit import Chem
 from tqdm import tqdm
-from util import Voc
-import numpy as np
-import re
-import os
+
+from drugex.util import Voc
 
 
 def corpus(input, out):
@@ -124,7 +133,10 @@ def A2AR(input, out):
     df.to_csv(out, index=False, sep='\t')
 
 
-if __name__ == '__main__':
+def main():
     ZINC('zinc/', 'data/ZINC.txt')
     corpus('data/zinc.txt', 'data/zinc')
     A2AR('data/A2AR_raw.txt', 'data/CHEMBL251.txt')
+
+if __name__ == '__main__':
+    main()

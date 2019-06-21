@@ -1,17 +1,23 @@
 #!/usr/bin/env python
-# This file is used for generator training under reinforcement learning framework.
-# It is implemented by intergrating exploration strategy into REINFORCE algorithm.
-# # The deep learning code is implemented by Pytorch ( >= version 1.0)
+# -*- coding: utf-8 -*-
+
+"""This file is used for generator training under reinforcement learning framework.
+
+It is implemented by integrating exploration strategy into REINFORCE algorithm.
+The deep learning code is implemented by PyTorch ( >= version 1.0)
+"""
+
+import getopt
+import os
+import sys
+
+import numpy as np
 import torch
 from rdkit import rdBase
-import numpy as np
-import model
-import util
-import os
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
-import getopt
-import sys
+
+from drugex import model, util
 
 
 def Policy_gradient(agent, environ, explore=None):

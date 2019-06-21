@@ -1,10 +1,14 @@
 #!/usr/bin/env python
-# This script is used for de novo designing the molecule with well-trained RNN model.
-import model
-import util
+# -*- coding: utf-8 -*-
+
+"""This script is used for *de novo* designing the molecule with well-trained RNN model."""
+
+import os
+
 import pandas as pd
 import torch
-import os
+
+from drugex import model, util
 
 
 def generate(agent_path, out, num=10000, environ_path='output/RF_cls_ecfp6.pkg'):
@@ -39,7 +43,7 @@ def generate(agent_path, out, num=10000, environ_path='output/RF_cls_ecfp6.pkg')
     df.to_csv(out, sep='\t', index=None)
 
 
-if __name__ == '__main__':
+def main():
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     # main('v1/net_e_5_1_500x10.pkg', 'v1/mol_e_5_1_500x10.txt')
     # main('v1/net_e_10_1_500x10.pkg', 'v1/mol_e_10_1_500x10.txt')
@@ -66,3 +70,6 @@ if __name__ == '__main__':
     # main('v1/net_a_25_0_500x10.pkg', 'mol_a_25_0_500x10.txt')
     # main('v2/net_REINVENT_ex_ex.pkg', 'v2/mol_REINVENT_ex_ex.pkg')
     generate('v2/net_10_1_1_500x10.pkg', 'v2/mol_10_1_1_500x10.txt')
+
+if __name__ == '__main__':
+    main()
