@@ -397,9 +397,9 @@ class Generator(nn.Module):
             if (is_end == 1).all(): break
         return sequences
 
-    def fit(self, loader_train, out_path: str, loader_valid=None,
-            n_epochs=100, lr=1e-3, *, log_path: str, use_tqdm=False):
+    def fit(self, loader_train, out_path: str, loader_valid=None, epochs=100, lr=1e-3, *, log_path: str):
         """Training the RNN generative model, similar to the scikit-learn or Keras style.
+
         In the end, the optimal value of parameters will also be persisted on the hard drive.
 
         Arguments:
@@ -407,18 +407,17 @@ class Generator(nn.Module):
             Dataset with util.MolData; for each iteration, the output batch is
             m X n LongTensor, m is the No. of samples, n is the maximum length
             of sequences.
-        out_path (str): the file path for the model file
-        valid_loader (DataLoader, optional): Data loader for validation set.
-            The data structure is as same as loader_train.
-            and log file (suffix with '.log').
-        n_epochs(int, optional): The maximum of training epochs (default: 100)
-        lr (float, optional): learning rate (default: 1e-4)
+            out_path (str): the file path for the model file
+            loader_valid (DataLoader, optional): Data loader for validation set.
+                The data structure is as same as loader_train.
+                and log file (suffix with '.log').
+            epochs(int, optional): The maximum of training epochs (default: 100)
+            lr (float, optional): learning rate (default: 1e-3)
         """
         optimizer = optim.Adam(self.parameters(), lr=lr)
         log = open(log_path, 'w')
         best_error = np.inf
-        epochs = trange(n_epochs) if use_tqdm else range(n_epochs)
-        for epoch in epochs:
+        for epoch in trange(epochs, desc='Fitting generator'):
             for i, batch in enumerate(loader_train):
                 optimizer.zero_grad()
                 loss_train = self.likelihood(batch.to(util.dev))
@@ -440,9 +439,9 @@ class Generator(nn.Module):
                         # If the validation set is given, the loss function will be
                         # calculated on the validation set.
                         loss_valid, size = 0, 0
-                        for j, batch in enumerate(loader_valid):
-                            size += batch.size(0)
-                            loss_valid += -self.likelihood(batch.to(util.dev)).sum()
+                        for j, inner_batch in enumerate(loader_valid):
+                            size += inner_batch.size(0)
+                            loss_valid += -self.likelihood(inner_batch.to(util.dev)).sum()
                         print(size)
                         loss_valid = loss_valid / size / self.voc.max_len
                         if loss_valid.item() < best_error:
@@ -462,9 +461,10 @@ class Generator(nn.Module):
 
 
 class Discriminator(Base):
-    """A highway version of CNN for text classification
-        architecture: Embedding >> Convolution >> Max-pooling >> Softmax
-        refered to Pytorch version of SeqGAN in https://github.com/suragnair/seqGAN
+    """A highway version of CNN for text classification.
+
+    architecture: Embedding >> Convolution >> Max-pooling >> Softmax
+    refered to Pytorch version of SeqGAN in https://github.com/suragnair/seqGAN
     """
 
     def __init__(self, vocab_size, emb_dim, filter_sizes, num_filters, dropout=0.25):

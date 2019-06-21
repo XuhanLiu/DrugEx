@@ -73,11 +73,12 @@ by running:
     as agent for molecule design. Fine-tuning the same RNN model as exploration
     network which will be fixed as an perturbation to enlarge the diversity.
     Run with: `drugex pretrainer -d data/ -o output/ --use-tqdm`
-4. `python -m drugex.agent`: 
+4. `drugex agent`: 
     Training the DrugEx model under the reinforcement learning framework.
     During the training process, both of the exploitation and exploitation
     network will be involved in the SMILES generation, and the exploration rate 
-    controls the contribution that exploration network makes.
+    controls the contribution that exploration network makes. Run with:
+    `drugex agent -d data/ -o output/`
 5. `python -m drugex.designer`:
     Finally, generating the SMILES format molecules with well-trained RNN model
     (pre-trained/fine-tuned model or DrugEx model).

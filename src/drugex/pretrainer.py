@@ -56,7 +56,7 @@ def _main_helper(*, input_directory, batch_size, output_directory, use_tqdm=Fals
     valid = DataLoader(valid, batch_size=batch_size, collate_fn=valid.collate_fn)
 
     print('Exploration network begins to be trained...')
-    explore.fit(train, loader_valid=valid, out_path=net_ex_pickle_path, n_epochs=1000, log_path=net_ex_log_path)
+    explore.fit(train, loader_valid=valid, out_path=net_ex_pickle_path, epochs=1000, log_path=net_ex_log_path)
     print('Exploration network training is finished!')
 
 

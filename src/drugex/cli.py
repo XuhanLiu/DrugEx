@@ -21,6 +21,8 @@ import click
 import drugex.dataset
 import drugex.environ
 import drugex.pretrainer
+import drugex.agent
+import drugex.designer
 
 __all__ = ['main']
 
@@ -28,6 +30,8 @@ main = click.Group(commands={
     'dataset': drugex.dataset.main,
     'environ': drugex.environ.main,
     'pretrainer': drugex.pretrainer.main,
+    'agent': drugex.agent.main,
+    'designer': drugex.designer.main
 })
 
 if __name__ == '__main__':
