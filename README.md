@@ -1,6 +1,5 @@
 DrugEx RELEASE NOTES
 ====================
-
 DrugEx (Drug Explorer): An explaration strategy improves the diversity of de novo drug design using deep reinforcement learning
 
 By Xuhan Liu & Gerard J.P. van Westen, on November 1st 2018
@@ -31,7 +30,8 @@ Examples
 
 Installation
 ============
-The code and its dependencies can be installed from GitHub with the following commands:
+The code and its dependencies can be installed from GitHub with the following
+commands:
 
 ```bash
 $ git clone https://https://github.com/XuhanLiu/DrugEx.git drugex
@@ -48,39 +48,47 @@ $ brew install libomp
 
 Usage
 ======
-For designing the novel drug molecules with SMILES representation, you should do the following steps sequentially by running scripts:
+For designing the novel drug molecules with SMILES representation, you should
+do the following steps sequentially by running scripts:
 
 1. `python -m drugex.dataset`: 
-    Preparing your dataset for pre-training and fine-tuning the RNN model as initial states of exploitation 
-    network and exploration network.
+    Preparing your dataset for pre-training and fine-tuning the RNN model as
+    initial states of exploitation network and exploration network.
 2. `python -m drugex.environ`:
-    Training your predictor as the environment for providing the final reward for the action from the agent. 
-    The performance can also be evaluated through n-fold cross validation and independent test. 
+    Training your predictor as the environment for providing the final reward
+    for the action from the agent. The performance can also be evaluated
+    through n-fold cross validation and independent test. 
 3. `python -m drugex.pretrainer`:
-    Pre-training the RNN model as initialization of exploitation network acted as agent for molecule design.
-    Fine-tuning the same RNN model as exploration network which will be fixed as an pertubation to enlarge the 
-    diversity.
+    Pre-training the RNN model as initialization of exploitation network acted
+    as agent for molecule design. Fine-tuning the same RNN model as exploration
+    network which will be fixed as an perturbation to enlarge the diversity.
 4. `python -m drugex.agent`: 
-    Training the DrugEx model under the reinforcement learning framework. During the training process, both of 
-    the exploitation and exploitation network will be involved in the SMILES generation, and the exploration rate 
+    Training the DrugEx model under the reinforcement learning framework.
+    During the training process, both of the exploitation and exploitation
+    network will be involved in the SMILES generation, and the exploration rate 
     controls the contribution that exploration network makes.
 5. `python -m drugex.designer`:
-    Finally, generating the SMILES format molecules with well-trained RNN model (pre-trained/fine-tuned model 
-    or DrugEx model).
+    Finally, generating the SMILES format molecules with well-trained RNN model
+    (pre-trained/fine-tuned model or DrugEx model).
         
-In addition, this toolkit also provides some other scripts for definition of special data structures, model architectures and coefficient measurements, etc.
+In addition, this toolkit also provides some other scripts for definition of
+special data structures, model architectures and coefficient measurements, etc.
 
-1. `python -m drugex.model`:
-    It contains all of the deep learning models that possibly used in this project, including single/multiple 
-    fully-connected regression/classification models, RNN generative model and highway CNN classification model.
-2. `python -m drugex.util`: 
-    It defines some special data structures, such as vocabulary of SMILES tokens, molecule dataset, environment 
-    and some methods for SMILES checking. 
-3. `python -m drugex.metric`:
-    The statistical methods that extracting properties from generated molecules.
+1. `drugex.model`:
+    It contains all of the deep learning models that possibly used in this
+    project, including single/multiple fully-connected
+    regression/classification models, RNN generative model and highway CNN
+    classification model.
+2. `drugex.util`: 
+    It defines some special data structures, such as vocabulary of SMILES
+    tokens, molecule dataset, environment and some methods for SMILES checking.
+3. `drugex.metric`:
+    The statistical methods that extracting properties from generated
+    molecules.
 4. `python -m drugex.figure`:
-    It provides a variety of the methods to measure the performance of every step during the training process of 
-    DrugEx, and form the figure for results visualization. 
+    It provides a variety of the methods to measure the performance of every
+    step during the training process of DrugEx, and form the figure for
+    results visualization. 
 
 References
 ==========
