@@ -18,7 +18,10 @@ from torch.utils.data import Dataset
 torch.set_num_threads(1)
 rdBase.DisableLog('rdApp.error')
 # designate the device that the PyTorch is allowed to use.
-dev = torch.device('cuda')
+if torch.cuda.is_available():
+    dev = torch.device('cuda')
+else:
+    dev = torch.device('cpu')
 
 
 class Voc(object):
