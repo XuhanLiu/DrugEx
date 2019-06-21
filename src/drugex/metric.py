@@ -306,7 +306,7 @@ def PhyChem(smiles):
     Arguments:
         smiles (list): list of SMILES strings.
     Returns:
-        props (ndarray): m X 19 matrix as nomalized PhysChem descriptors.
+        props (ndarray): m X 19 matrix as normalized PhysChem descriptors.
             m is the No. of samples
     """
     props = []
@@ -335,7 +335,7 @@ def PhyChem(smiles):
             # charge = AllChem.ComputeGasteigerCharges(mol)
             prop = [MW, LOGP, HBA, HBD, rotable, amide, bridge, heteroA, heavy, spiro,
                     FCSP3, ring, Aliphatic, aromatic, saturated, heteroR, TPSA, valence, mr]
-        except:
+        except Exception:
             print(smile)
             prop = [0] * 19
         props.append(prop)
