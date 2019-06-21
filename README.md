@@ -48,22 +48,26 @@ $ brew install libomp
 
 Usage
 ======
-For designing the novel drug molecules with SMILES representation, you should
-do the following steps sequentially by running scripts:
+``drugex`` installs a command line interface that can be used to access the
+scripts. Note: some of them haven't been ported to the CLI yet, and still
+have to be accessed as python modules. For designing the novel drug molecules
+with SMILES representation, you should do the following steps sequentially
+by running:
 
-1. `python -m drugex.dataset`: 
+1. `drugex dataset`: 
     Preparing your dataset for pre-training and fine-tuning the RNN model as
-    initial states of exploitation network and exploration network.
-2. `python -m drugex.environ`:
+    initial states of exploitation network and exploration network. Run with:
+    `drugex dataset -d data`.
+2. `drugex environ`:
     Training your predictor as the environment for providing the final reward
     for the action from the agent. The performance can also be evaluated
     through n-fold cross validation and independent test. For example, to
     train on the A2AR data, run:
-    - `python -m drugex.environ -p data/A2AR_raw.txt -a RF`
-    - `python -m drugex.environ -p data/A2AR_raw.txt -a DNN`
-    - `python -m drugex.environ -p data/A2AR_raw.txt -a KNN`
-    - `python -m drugex.environ -p data/A2AR_raw.txt -a NB`
-    - `python -m drugex.environ -p data/A2AR_raw.txt -a SVM`
+    - `drugex environ -p data/A2AR_raw.txt -a RF`
+    - `drugex environ -p data/A2AR_raw.txt -a DNN`
+    - `drugex environ -p data/A2AR_raw.txt -a KNN`
+    - `drugex environ -p data/A2AR_raw.txt -a NB`
+    - `drugex environ -p data/A2AR_raw.txt -a SVM`
 3. `python -m drugex.pretrainer`:
     Pre-training the RNN model as initialization of exploitation network acted
     as agent for molecule design. Fine-tuning the same RNN model as exploration
