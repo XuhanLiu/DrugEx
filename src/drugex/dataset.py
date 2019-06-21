@@ -12,6 +12,7 @@ It contains two dataset as follows:
 import os
 import re
 
+import click
 import numpy as np
 import pandas as pd
 from rdkit import Chem
@@ -20,50 +21,55 @@ from tqdm import tqdm
 from drugex.util import Voc
 
 
-def corpus(input, out):
+SUB_RE = re.compile(r'\[\d+')
+
+
+def corpus(input: str, out: str, *, vocab_path: str):
     """Constructing the molecular corpus by splitting each SMILES into
     a range of tokens contained in vocabulary.
 
     Arguments:
-        input (str): the path of tab-delimited data file that contains CANONICAL_SMILES.
-        out (str): the path for vocabulary (containing all of tokens for SMILES construction)
+        input : the path of tab-delimited data file that contains CANONICAL_SMILES.
+        out : the path for vocabulary (containing all of tokens for SMILES construction)
             and output table (including CANONICAL_SMILES and whitespace delimited token sentence)
     """
     df = pd.read_table(input).CANONICAL_SMILES
-    voc = Voc('data/voc.txt')
-    words = set()
+    voc = Voc(vocab_path)
     canons = []
     tokens = []
     smiles = set()
-    for smile in tqdm(df):
+    it = tqdm(df, desc='Reading SMILES')
+    for smile in it:
         # replacing the radioactive atom into nonradioactive atom
-        smile = re.sub('\[\d+', '[', smile)
+        smile = SUB_RE.sub('[', smile)
         # reserving the largest one if the molecule contains more than one fragments,
-        # which are seperated by '.'.
+        # which are separated by '.'.
         if '.' in smile:
             frags = smile.split('.')
             ix = np.argmax([len(frag) for frag in frags])
             smile = frags[ix]
+            # TODO replace with: smile = max(frags, key=len)
         # if it doesn't contain carbon atom, it cannot be drug-like molecule, just remove
         if smile.count('C') + smile.count('c') < 2:
             continue
         if smile in smiles:
-            print(smile)
+            it.write('duplicate: {}'.format(smile))
         smiles.add(smile)
     # collecting all of the tokens in the sentences for vocabulary construction.
-    for smile in tqdm(smiles):
+    words = set()
+    it = tqdm(smiles, desc='Collecting tokens')
+    for smile in it:
         try:
             token = voc.tokenize(smile)
             if len(token) <= 100:
                 words.update(token)
                 canons.append(Chem.CanonSmiles(smile, 0))
                 tokens.append(' '.join(token))
-        except:
-            print(smile)
+        except Exception as e:
+            it.write('{} {}'.format(e, smile))
     # persisting the vocabulary on the hard drive.
-    log = open(out + '_voc.txt', 'w')
-    log.write('\n'.join(sorted(words)))
-    log.close()
+    with open(out + '_voc.txt', 'w') as file:
+        file.write('\n'.join(sorted(words)))
 
     # saving the canonical smiles and token sentences as a table into hard drive.
     log = pd.DataFrame()
@@ -73,14 +79,14 @@ def corpus(input, out):
     log.to_csv(out + '_corpus.txt', sep='\t', index=None)
 
 
-def ZINC(folder, out):
+def ZINC(folder: str, out: str):
     """Uniformly random selecting molecule from ZINC database for Construction of ZINC set,
     which is used for pre-trained model training.
 
     Arguments:
-        folder (str): the directory of the ZINC database, it contains all of the molecules
-            that are seperated into different files based on the logP and molecular weight.
-        out (str): the file path of output dataframe, it contains all of randomly selected molecules,
+        folder : the directory of the ZINC database, it contains all of the molecules
+            that are separated into different files based on the logP and molecular weight.
+        out : the file path of output dataframe, it contains all of randomly selected molecules,
             also including its SMILES string, logP and molecular weight
     """
     files = os.listdir(folder)
@@ -103,15 +109,15 @@ def ZINC(folder, out):
     select.to_csv(out, sep='\t', index=None)
 
 
-def A2AR(input, out):
+def A2AR(input_path: str, output_path: str):
     """Construction of A2AR set, which is used for fine-tuned model and predictor training.
     Arguments:
-        input (str): the path of tab-delimited data file that contains CANONICAL_SMILES.
-        out (str): the path saving the refined data after filtering the invalid data,
+        input_path : the path of tab-delimited data file that contains CANONICAL_SMILES.
+        output_path : the path saving the refined data after filtering the invalid data,
             including removing molecule contained metal atom, reserving the largest fragments,
             and replacing the nitrogen electrical group to nitrogen atom "N".
     """
-    df = pd.read_table(input)
+    df = pd.read_table(input_path)
     df = df[['CMPD_CHEMBLID', 'CANONICAL_SMILES', 'PCHEMBL_VALUE']]
     df = df.dropna()
     for i, row in df.iterrows():
@@ -130,13 +136,30 @@ def A2AR(input, out):
         if '[Au]' in smile or '[As]' in smile or '[Hg]' in smile or '[Se]' in smile or smile.count('C') + smile.count('c') < 2:
             df = df.drop(i)
     # df = df.drop_duplicates(subset='CANONICAL_SMILES')
-    df.to_csv(out, index=False, sep='\t')
+    df.to_csv(output_path, index=False, sep='\t')
 
 
+@click.command()
 def main():
-    ZINC('zinc/', 'data/ZINC.txt')
-    corpus('data/zinc.txt', 'data/zinc')
-    A2AR('data/A2AR_raw.txt', 'data/CHEMBL251.txt')
+    zinc_folder = 'zinc/'
+    zinc_output_path = os.path.join('data/ZINC.txt')
+    if os.path.exists(zinc_folder):
+        ZINC(folder=zinc_folder, out=zinc_output_path)
+    else:
+        click.echo('Missing ZINC folder: {}'.format(zinc_folder))
+
+    if os.path.exists(zinc_output_path):
+        corpus(zinc_output_path, 'data/zinc', vocab_path='data/voc.txt')
+    else:
+        click.echo('Missing ZINC output file: {}'.format(zinc_output_path))
+
+    a2ar_path = 'data/A2AR_raw.txt'
+    a2ar_output_path = 'data/CHEMBL251.txt'
+    if os.path.exists(a2ar_path):
+        A2AR(a2ar_path, a2ar_output_path)
+    else:
+        click.echo('Missing A2AR path: {}'.format(a2ar_path))
+
 
 if __name__ == '__main__':
     main()
