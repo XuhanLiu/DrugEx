@@ -9,6 +9,7 @@ The traditional ML models are implemented by using Scikit-Learn (version >= 0.18
 
 import os
 
+import click
 import numpy as np
 import pandas as pd
 import torch as T
@@ -19,10 +20,11 @@ from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.svm import SVC, SVR
 from torch.utils.data import DataLoader, TensorDataset
 
-from drugex import model, util
+from drugex import util
+from drugex.model import MTFullyConnected, STFullyConnected
 
 
-def DNN(X, y, X_ind, y_ind, out, is_reg=False, *, batch_size, n_epoch, lr):
+def DNN(X, y, X_ind, y_ind, out, is_regression=False, *, batch_size, n_epoch, lr):
     """Cross Validation and independent set test for fully connected deep neural network
 
     Arguments:
@@ -37,7 +39,7 @@ def DNN(X, y, X_ind, y_ind, out, is_reg=False, *, batch_size, n_epoch, lr):
         y_ind (ndarray): Feature data of independent set for for independent test.
                          It has the similar data structure as y
         out (str): The file path for saving the result data.
-        is_reg (bool, optional): define the model for regression (True) or classification (False) (Default: False)
+        is_regression (bool, optional): define the model for regression (True) or classification (False) (Default: False)
 
     Returns:
          cvs (ndarray): cross-validation results. If it is single task, the shape is (m, ),
@@ -45,12 +47,12 @@ def DNN(X, y, X_ind, y_ind, out, is_reg=False, *, batch_size, n_epoch, lr):
                         if it is multi-task, the shape is m X n, n is the No. of tasks.
          inds (ndarray): independent test results. It has similar data structure as cvs.
     """
-    if 'mtqsar' in out or is_reg:
+    if 'mtqsar' in out or is_regression:
         folds = KFold(5).split(X)
-        NET = model.MTFullyConnected
+        NET = MTFullyConnected
     else:
         folds = StratifiedKFold(5).split(X, y[:, 0])
-        NET = model.STFullyConnected
+        NET = STFullyConnected
     indep_set = TensorDataset(T.Tensor(X_ind), T.Tensor(y_ind))
     indep_loader = DataLoader(indep_set, batch_size=batch_size)
     cvs = np.zeros(y.shape)
@@ -60,7 +62,7 @@ def DNN(X, y, X_ind, y_ind, out, is_reg=False, *, batch_size, n_epoch, lr):
         train_loader = DataLoader(train_set, batch_size=batch_size)
         valid_set = TensorDataset(T.Tensor(X[valided]), T.Tensor(y[valided]))
         valid_loader = DataLoader(valid_set, batch_size=batch_size)
-        net = NET(X.shape[1], y.shape[1], is_reg=is_reg)
+        net = NET(X.shape[1], y.shape[1], is_reg=is_regression)
         net.fit(train_loader, valid_loader, out='%s_%d' % (out, i), epochs=n_epoch, lr=lr)
         cvs[valided] = net.predict(valid_loader)
         inds += net.predict(indep_loader)
@@ -68,7 +70,7 @@ def DNN(X, y, X_ind, y_ind, out, is_reg=False, *, batch_size, n_epoch, lr):
     return cvs[cv], inds[ind] / 5
 
 
-def RF(X, y, X_ind, y_ind, is_reg=False):
+def RF(X, y, X_ind, y_ind, is_regression=False, n_folds=5):
     """Cross Validation and independent set test for Random Forest model
 
     Arguments:
@@ -81,24 +83,24 @@ def RF(X, y, X_ind, y_ind, is_reg=False):
         y_ind (ndarray): Feature data of independent set for for independent test.
                          It has the similar data structure as y
         out (str): The file path for saving the result data.
-        is_reg (bool, optional): define the model for regression (True) or classification (False) (Default: False)
+        is_regression (bool, optional): define the model for regression (True) or classification (False) (Default: False)
 
     Returns:
          cvs (ndarray): cross-validation results. The shape is (m, ), m is the No. of samples.
          inds (ndarray): independent test results. It has similar data structure as cvs.
         """
-    if is_reg:
-        folds = KFold(5).split(X)
+    if is_regression:
+        folds = KFold(n_folds).split(X)
         alg = RandomForestRegressor
     else:
-        folds = StratifiedKFold(5).split(X, y)
+        folds = StratifiedKFold(n_folds).split(X, y)
         alg = RandomForestClassifier
     cvs = np.zeros(y.shape)
     inds = np.zeros(y_ind.shape)
     for i, (trained, valided) in enumerate(folds):
         model = alg(n_estimators=500, n_jobs=1)
         model.fit(X[trained], y[trained])
-        if is_reg:
+        if is_regression:
             cvs[valided] = model.predict(X[valided])
             inds += model.predict(X_ind)
         else:
@@ -218,17 +220,19 @@ def NB(X, y, X_ind, y_ind):
     return cvs, inds / 5
 
 
+PAIR = ['CMPD_CHEMBLID', 'CANONICAL_SMILES', 'PCHEMBL_VALUE', 'ACTIVITY_COMMENT']
+
+
 # Model performance and saving
-def main(feat, alg='RF', reg=False, *, batch_size, n_epoch, lr):
-    pair = ['CMPD_CHEMBLID', 'CANONICAL_SMILES', 'PCHEMBL_VALUE', 'ACTIVITY_COMMENT']
-    df = pd.read_table('data/CHEMBL251.txt')
-    df = df[pair].set_index(pair[0])
-    df[pair[2]] = df.groupby(pair[0]).mean()
+def _main_helper(*, path, feat, alg, is_regression, batch_size, n_epoch, lr, output):
+    df = pd.read_table(path)
+    df = df[PAIR].set_index(PAIR[0])
+    df[PAIR[2]] = df.groupby(PAIR[0]).mean()
     # The molecules that have PChEMBL value
-    numery = df[pair[1:-1]].drop_duplicates().dropna()
-    if reg:
+    numery = df[PAIR[1:-1]].drop_duplicates().dropna()
+    if is_regression:
         df = numery
-        y = numery[pair[2:3]].values
+        y = numery[PAIR[2:3]].values
     else:
         # The molecules that do not have PChEMBL value
         # but has activity comment to show whether it is active or not.
@@ -236,15 +240,16 @@ def main(feat, alg='RF', reg=False, *, batch_size, n_epoch, lr):
         binary = binary[~binary.index.isin(numery.index)]
         # binary.loc[binary.ACTIVITY_COMMENT == 'Active', 'PCHEMBL_VALUE'] = 100.0
         binary.loc[binary.ACTIVITY_COMMENT.str.contains('Not'), 'PCHEMBL_VALUE'] = 0.0
-        binary = binary[pair[1:3]].dropna().drop_duplicates()
+        binary = binary[PAIR[1:3]].dropna().drop_duplicates()
         df = numery.append(binary)
         # For classification model the active ligand is defined as
         # PChBMBL value >= 6.5
-        y = (df[pair[2:3]] >= 6.5).astype(float).values
+        y = (df[PAIR[2:3]] >= 6.5).astype(float).values
     # ECFP6 fingerprints extraction
     X = util.Environment.ECFP_from_SMILES(df.CANONICAL_SMILES).values
 
-    out = 'output/%s_%s_%s' % (alg, 'reg' if reg else 'cls', feat)
+    os.makedirs(output, exist_ok=True)
+    out = os.path.join(output, '%s_%s_%s' % (alg, 'reg' if is_regression else 'cls', feat))
 
     # Model training and saving
     # model = RandomForestClassifier(n_estimators=1000, n_jobs=10)
@@ -263,23 +268,42 @@ def main(feat, alg='RF', reg=False, *, batch_size, n_epoch, lr):
     elif alg == 'NB':
         cv, ind = NB(X, y[:, 0], X, y[:, 0])
     elif alg == 'DNN':
-        cv, ind = DNN(X, y, X, y, out=out, is_reg=reg, batch_size=batch_size, n_epoch=n_epoch, lr=lr)
+        cv, ind = DNN(X, y, X, y, out=out, is_regression=is_regression, batch_size=batch_size, n_epoch=n_epoch, lr=lr)
+    elif alg == 'RF':
+        cv, ind = RF(X, y[:, 0], X, y[:, 0], is_regression=is_regression)
     else:
-        cv, ind = RF(X, y[:, 0], X, y[:, 0], is_reg=reg)
+        raise ValueError('Invalid algorithm: {}'.format(alg))
+
     data['SCORE'], test['SCORE'] = cv, ind
     data.to_csv(out + '.cv.txt', index=None)
     test.to_csv(out + '.ind.txt', index=None)
 
 
-def more_main():
-    batch_size = 1024
-    n_epoch = 1000
-    T.set_num_threads(1)
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-    lr = 1e-5
-
-    main('ecfp6', 'DNN', reg=False, batch_size=batch_size, n_epoch=n_epoch, lr=lr)
+@click.command()
+@click.option('-p', '--path', type=click.Path(file_okay=True), default='data/CHEMBL251.txt', required=True)
+@click.option('-o', '--output', type=click.Path(file_okay=False, dir_okay=True), default='output', required=True)
+@click.option('--lr', type=float, default=1e-5, show_default=True)
+@click.option('--batch-size', type=int, default=1024, show_default=True)
+@click.option('--n-epoch', type=int, default=1000, show_default=True)
+@click.option('--n-threads', type=int, default=1, show_default=True)
+@click.option('--regression', is_flag=True)
+@click.option('-a', '--algorithm', type=click.Choice(['SVM', 'KNN', 'RF', 'DNN', 'NB']), default='RF', show_default=True)
+@click.option('--cuda', is_flag=True)
+def main(path, output, lr, batch_size, n_epoch, n_threads, regression, algorithm, cuda: bool):
+    T.set_num_threads(n_threads)
+    if cuda:
+        os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    _main_helper(
+        path=path,
+        feat='ecfp6',
+        alg=algorithm,
+        is_regression=regression,
+        batch_size=batch_size,
+        n_epoch=n_epoch,
+        lr=lr,
+        output=output,
+    )
 
 
 if __name__ == '__main__':
-    more_main()
+    main()

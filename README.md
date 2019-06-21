@@ -57,7 +57,13 @@ do the following steps sequentially by running scripts:
 2. `python -m drugex.environ`:
     Training your predictor as the environment for providing the final reward
     for the action from the agent. The performance can also be evaluated
-    through n-fold cross validation and independent test. 
+    through n-fold cross validation and independent test. For example, to
+    train on the A2AR data, run:
+    - `python -m drugex.environ -p data/A2AR_raw.txt -a RF`
+    - `python -m drugex.environ -p data/A2AR_raw.txt -a DNN`
+    - `python -m drugex.environ -p data/A2AR_raw.txt -a KNN`
+    - `python -m drugex.environ -p data/A2AR_raw.txt -a NB`
+    - `python -m drugex.environ -p data/A2AR_raw.txt -a SVM`
 3. `python -m drugex.pretrainer`:
     Pre-training the RNN model as initialization of exploitation network acted
     as agent for molecule design. Fine-tuning the same RNN model as exploration
