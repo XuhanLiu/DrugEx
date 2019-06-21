@@ -25,7 +25,7 @@ __all__ = ['main']
 
 main = click.Group(commands={
     'dataset': drugex.dataset.main,
-    'environ': drugex.environ,
+    'environ': drugex.environ.main,
 })
 
 if __name__ == '__main__':
