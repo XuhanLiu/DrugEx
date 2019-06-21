@@ -39,6 +39,13 @@ $ cd drugex
 $ pip install -e .
 ```
 
+On mac, you may [need](https://github.com/pytorch/pytorch/issues/20030) to also
+install `libomp` with:
+
+```bash
+$ brew install libomp
+```
+
 Usage
 ======
 For designing the novel drug molecules with SMILES representation, you should do the following steps sequentially by running scripts:
