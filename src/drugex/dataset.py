@@ -140,21 +140,22 @@ def A2AR(input_path: str, output_path: str):
 
 
 @click.command()
-def main():
-    zinc_folder = 'zinc/'
-    zinc_output_path = os.path.join('data/ZINC.txt')
-    if os.path.exists(zinc_folder):
-        ZINC(folder=zinc_folder, out=zinc_output_path)
+@click.command('-z', '--zinc-directory', default='zinc/', type=click.Path(dir_okay=True, file_okay=False))
+@click.command('-d', '--directory', type=click.Path(dir_okay=True, file_okay=False), required=True)
+def main(zinc_directory, directory):
+    zinc_output_path = os.path.join(directory, 'ZINC.txt')
+    if os.path.exists(zinc_directory):
+        ZINC(folder=zinc_directory, out=zinc_output_path)
     else:
-        click.echo('Missing ZINC folder: {}'.format(zinc_folder))
+        click.echo('Missing ZINC folder: {}'.format(zinc_directory))
 
     if os.path.exists(zinc_output_path):
-        corpus(zinc_output_path, 'data/zinc', vocab_path='data/voc.txt')
+        corpus(zinc_output_path, os.path.join(directory, 'zinc'), vocab_path='data/voc.txt')
     else:
         click.echo('Missing ZINC output file: {}'.format(zinc_output_path))
 
-    a2ar_path = 'data/A2AR_raw.txt'
-    a2ar_output_path = 'data/CHEMBL251.txt'
+    a2ar_path = os.path.join(directory, 'A2AR_raw.txt')
+    a2ar_output_path = os.path.join(directory, 'CHEMBL251.txt')
     if os.path.exists(a2ar_path):
         A2AR(a2ar_path, a2ar_output_path)
     else:
