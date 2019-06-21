@@ -11,6 +11,7 @@ import time
 
 import numpy as np
 import torch
+from tqdm import trange
 from torch import nn, optim
 from torch.nn import functional as F
 
@@ -236,7 +237,7 @@ class MTFullyConnected(Base):
 
 
 class Generator(nn.Module):
-    """Recurrent neuroal networks based SMILES format molecule generator,
+    """Recurrent neural networks based SMILES format molecule generator,
     this RNN model is used both for exploration and exploitation network
     that are involved in DrugEx training process. In the end, only
     exploitation network is used as agent for molecule design.
@@ -396,7 +397,8 @@ class Generator(nn.Module):
             if (is_end == 1).all(): break
         return sequences
 
-    def fit(self, loader_train, out, loader_valid=None, epochs=100, lr=1e-3):
+    def fit(self, loader_train, out_path: str, loader_valid=None,
+            n_epochs=100, lr=1e-3, *, log_path: str, use_tqdm=False):
         """Training the RNN generative model, similar to the scikit-learn or Keras style.
         In the end, the optimal value of parameters will also be persisted on the hard drive.
 
@@ -405,17 +407,18 @@ class Generator(nn.Module):
             Dataset with util.MolData; for each iteration, the output batch is
             m X n LongTensor, m is the No. of samples, n is the maximum length
             of sequences.
-        out (str): the file path for the model file (suffix with '.pkg')
+        out_path (str): the file path for the model file
         valid_loader (DataLoader, optional): Data loader for validation set.
             The data structure is as same as loader_train.
             and log file (suffix with '.log').
-        epochs(int, optional): The maximum of training epochs (default: 100)
+        n_epochs(int, optional): The maximum of training epochs (default: 100)
         lr (float, optional): learning rate (default: 1e-4)
         """
         optimizer = optim.Adam(self.parameters(), lr=lr)
-        log = open(out + '.log', 'w')
+        log = open(log_path, 'w')
         best_error = np.inf
-        for epoch in range(epochs):
+        epochs = trange(n_epochs) if use_tqdm else range(n_epochs)
+        for epoch in epochs:
             for i, batch in enumerate(loader_train):
                 optimizer.zero_grad()
                 loss_train = self.likelihood(batch.to(util.dev))
@@ -443,19 +446,19 @@ class Generator(nn.Module):
                         print(size)
                         loss_valid = loss_valid / size / self.voc.max_len
                         if loss_valid.item() < best_error:
-                            torch.save(self.state_dict(), out + '.pkg')
+                            torch.save(self.state_dict(), out_path)
                             best_error = loss_valid.item()
                         info += ' loss_valid: %.3f' % loss_valid.item()
                     elif error < best_error:
                         # If the validation is not given, the loss function will be
                         # just based on the training set.
-                        torch.save(self.state_dict(), out + '.pkg')
+                        torch.save(self.state_dict(), out_path)
                         best_error = error
                     print(info, file=log)
-                    for i, smile in enumerate(smiles):
-                        print('%d\t%s' % (valids[i], smile), file=log)
+                    for j, smile in enumerate(smiles):
+                        print('%d\t%s' % (valids[j], smile), file=log)
         log.close()
-        self.load_state_dict(torch.load(out + '.pkg'))
+        self.load_state_dict(torch.load(out_path))
 
 
 class Discriminator(Base):

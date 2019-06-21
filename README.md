@@ -68,10 +68,11 @@ by running:
     - `drugex environ -p data/A2AR_raw.txt -a KNN`
     - `drugex environ -p data/A2AR_raw.txt -a NB`
     - `drugex environ -p data/A2AR_raw.txt -a SVM`
-3. `python -m drugex.pretrainer`:
+3. `drugex pretrainer`:
     Pre-training the RNN model as initialization of exploitation network acted
     as agent for molecule design. Fine-tuning the same RNN model as exploration
     network which will be fixed as an perturbation to enlarge the diversity.
+    Run with: `drugex pretrainer -d data/ -o output/ --use-tqdm`
 4. `python -m drugex.agent`: 
     Training the DrugEx model under the reinforcement learning framework.
     During the training process, both of the exploitation and exploitation
