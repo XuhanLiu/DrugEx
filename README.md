@@ -31,10 +31,12 @@ Examples
 
 Installation
 ============
-The code and its dependencies can be installed from GitHub with the following command:
+The code and its dependencies can be installed from GitHub with the following commands:
 
 ```bash
-$ pip install git+https://https://github.com/XuhanLiu/DrugEx.git
+$ git clone https://https://github.com/XuhanLiu/DrugEx.git drugex
+$ cd drugex
+$ pip install -e .
 ```
 
 Usage
