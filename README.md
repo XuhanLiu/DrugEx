@@ -99,8 +99,8 @@ In addition, this toolkit also provides some other scripts for definition of spe
 
 References
 ==========
-Liu, Xuhan; Ye, Kai; Van Vlijmen, Herman; IJzerman, Adriaan P.; Van westen, Gerard JP (2018): An Exploration Strategy Improves the Diversity of de novo Ligands Using Deep Reinforcement Learning – A Case for the Adenosine A2A Receptor. ChemRxiv. Preprint.
-https://doi.org/10.26434/chemrxiv.7436789.v2
+Liu X, Ye K, van Vlijmen HWT, AP IJ, van Westen GJP (2019) An exploration strategy improves the diversity of de novo ligands using deep reinforcement learning: a case for the adenosine A2A receptor. Journal of cheminformatics 11 (1):35. doi:10.1186/s13321-019-0355-6
+https://jcheminf.biomedcentral.com/articles/10.1186/s13321-019-0355-6
 
 
 Acknowledgement
