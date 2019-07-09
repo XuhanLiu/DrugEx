@@ -5,6 +5,7 @@ import util
 import pandas as pd
 import torch
 import os
+import getopt
 
 
 def generate(agent_path, out, num=10000, environ_path='output/RF_cls_ecfp6.pkg'):
@@ -40,29 +41,11 @@ def generate(agent_path, out, num=10000, environ_path='output/RF_cls_ecfp6.pkg')
 
 
 if __name__ == '__main__':
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-    # main('v1/net_e_5_1_500x10.pkg', 'v1/mol_e_5_1_500x10.txt')
-    # main('v1/net_e_10_1_500x10.pkg', 'v1/mol_e_10_1_500x10.txt')
-    # main('v1/net_e_15_1_500x10.pkg', 'v1/mol_e_15_1_500x10.txt')
-    # main('v1/net_e_20_1_500x10.pkg', 'v1/mol_e_20_1_500x10.txt')
-    # main('v1/net_e_25_1_500x10.pkg', 'v1/mol_e_25_1_500x10.txt')
-    #
-    # main('v1/net_e_5_0_500x10.pkg', 'v1/mol_e_5_0_500x10.txt')
-    # main('v1/net_e_10_0_500x10.pkg', 'v1/mol_e_10_0_500x10.txt')
-    # main('v1/net_e_15_0_500x10.pkg', 'v1/mol_e_15_0_500x10.txt')
-    # main('v1/net_e_20_0_500x10.pkg', 'v1/mol_e_20_0_500x10.txt')
-    # main('v1/net_e_25_0_500x10.pkg', 'v1/mol_e_25_0_500x10.txt')
-    #
-    # main('v1/net_a_5_1_500x10.pkg', 'v1/mol_a_5_1_500x10.txt')
-    # main('v1/net_a_10_1_500x10.pkg', 'v1/mol_a_10_1_500x10.txt')
-    # main('v1/net_a_15_1_500x10.pkg', 'v1/mol_a_15_1_500x10.txt')
-    # main('v1/net_a_20_1_500x10.pkg', 'v1/mol_a_20_1_500x10.txt')
-    # main('v1/net_a_25_1_500x10.pkg', 'v1/mol_a_25_1_500x10.txt')
-    #
-    # main('v1/net_a_5_0_500x10.pkg', 'v1/mol_a_5_0_500x10.txt')
-    # main('v1/net_a_10_0_500x10.pkg', 'v1/mol_a_10_0_500x10.txt')
-    # main('v1/net_a_15_0_500x10.pkg', 'v1/mol_a_15_0_500x10.txt')
-    # main('v1/net_a_20_0_500x10.pkg', 'v1/mol_a_20_0_500x10.txt')
-    # main('v1/net_a_25_0_500x10.pkg', 'mol_a_25_0_500x10.txt')
-    # main('v2/net_REINVENT_ex_ex.pkg', 'v2/mol_REINVENT_ex_ex.pkg')
-    generate('v2/net_10_1_1_500x10.pkg', 'v2/mol_10_1_1_500x10.txt')
+    opts, args = getopt.getopt(sys.argv[1:], "i:b:g:n:")
+    OPT = dict(opts)
+    os.environ["CUDA_VISIBLE_DEVICES"] = OPT['-g'] if '-g' in OPT else "0"
+    agent_path = OPT['-i'] if '-i' in OPT else 'data/agent.pkg'
+    out_path = OPT['-o'] if '-o' in OPT else 'mol.txt'
+    pop_size = OPT['-n'] if '-n' in OPT else 10000
+    batch_size = OPT['-b'] if '-b' in OPT else 500
+    generate(agent_path, out_path, num=pop_size)
