@@ -371,23 +371,24 @@ class Generator(nn.Module):
         is_end = torch.zeros(batch_size).byte().to(util.dev)
 
         for step in range(self.voc.max_len):
-            logit, h = self(x, h)
-            if explore:
-                logit1, h1 = explore(x, h1)
-                loc = (torch.rand(batch_size, 1) < epsilon).expand(logit.size()).to(util.dev)
-                logit[loc] = logit1[loc]
-            proba = logit.softmax(dim=-1)
-            # sampling based on output probability distribution
-            x = torch.multinomial(proba, 1).view(-1)
+            with torch.no_grad():
+                logit, h = self(x, h)
+                if explore:
+                    logit1, h1 = explore(x, h1)
+                    loc = (torch.rand(batch_size, 1) < epsilon).expand(logit.size()).to(util.dev)
+                    logit[loc] = logit1[loc]
+                proba = logit.softmax(dim=-1)
+                # sampling based on output probability distribution
+                x = torch.multinomial(proba, 1).view(-1)
 
-            x[is_end] = self.voc.tk2ix['EOS']
-            sequences[:, step] = x
+                x[is_end] = self.voc.tk2ix['EOS']
+                sequences[:, step] = x
 
-            # Judging whether samples are end or not.
-            end_token = (x == self.voc.tk2ix['EOS'])
-            is_end = torch.ge(is_end + end_token, 1)
-            #  If all of the samples generation being end, stop the sampling process
-            if (is_end == 1).all(): break
+                # Judging whether samples are end or not.
+                end_token = (x == self.voc.tk2ix['EOS'])
+                is_end = torch.ge(is_end + end_token, 1)
+                #  If all of the samples generation being end, stop the sampling process
+                if (is_end == 1).all(): break
         return sequences
 
     def fit(self, loader_train, out, loader_valid=None, epochs=100, lr=1e-3):
