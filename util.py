@@ -29,7 +29,7 @@ class Voc(object):
         path (str): the path of vocabulary file that contains all of the tokens split by '\n'
     """
     def __init__(self, path, max_len=100):
-        self.chars = ['EOS', 'GO']
+        self.chars = ['GO']
         if path is not None and os.path.exists(path):
             f = open(path, 'r')
             chars = f.read().split()
