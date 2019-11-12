@@ -62,7 +62,6 @@ class Voc(object):
             else:
                 for i, char in enumerate(word):
                     tokens.append(char)
-        tokens.append('EOS')
         return tokens
 
     def encode(self, tokens):
