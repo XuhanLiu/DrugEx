@@ -99,11 +99,11 @@ def main():
     # File path of predictor in the environment
     environ_path = 'output/RF_cls_ecfp6.pkg'
     # file path of hidden states in RNN for initialization
-    initial_path = 'output/net_p'
+    initial_path = 'output/net_pr'
     # file path of hidden states of optimal exploitation network
     agent_path = 'output/net_e_%.2f_%.1f_%dx%d' % (Epsilon, Baseline, BATCH_SIZE, MC)
     # file path of hidden states of exploration network
-    explore_path = 'output/net_p'
+    explore_path = 'output/net_ex'
 
     # Environment (predictor)
     environ = util.Environment(environ_path)
