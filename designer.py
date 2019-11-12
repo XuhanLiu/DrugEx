@@ -6,6 +6,7 @@ import pandas as pd
 import torch
 import os
 import getopt
+import sys
 
 
 def generate(agent_path, out, num=10000, environ_path='output/RF_cls_ecfp6.pkg'):
