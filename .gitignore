@@ -1,5 +1,6 @@
 /.idea/
 __pycache__/
-/data/
+/data/*_corpus.txt
+/data/*_voc.txt
 /output/
 /zinc/
