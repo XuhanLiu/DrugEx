@@ -275,4 +275,4 @@ if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     LR = 1e-5
 
-    main('ecfp6', 'DNN', reg=False)
+    main('ecfp6', 'RF', reg=False)
