@@ -99,7 +99,7 @@ class Base(nn.Module):
             y_ = self.forward(Xb)
             ix = yb == yb
             yb, y_ = yb[ix], y_[ix]
-            loss += self.criterion(y_, yb).data[0]
+            loss += self.criterion(y_, yb).item()
         loss = loss / len(loader)
         return loss
 
