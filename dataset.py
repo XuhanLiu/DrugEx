@@ -20,7 +20,7 @@ def corpus(input, out):
         out (str): the path for vocabulary (containing all of tokens for SMILES construction)
             and output table (including CANONICAL_SMILES and whitespace delimited token sentence)
     """
-    df = pd.read_table(input).CANONICAL_SMILES
+    df = pd.read_table(input).CANONICAL_SMILES.dropna()
     voc = Voc('data/voc.txt')
     words = set()
     canons = []
