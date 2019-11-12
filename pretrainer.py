@@ -51,7 +51,7 @@ def main():
 if __name__ == "__main__":
     opts, args = getopt.getopt(sys.argv[1:], "e:b:g:")
     OPT = dict(opts)
-    BATCH_SIZE = int(OPT['-b']) if '-b' in OPT else 512
+    BATCH_SIZE = int(OPT['-b']) if '-b' in OPT else 128
     if '-g' in OPT:
         os.environ["CUDA_VISIBLE_DEVICES"] = OPT['-g']
     main()
