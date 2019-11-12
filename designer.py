@@ -45,7 +45,7 @@ if __name__ == '__main__':
     opts, args = getopt.getopt(sys.argv[1:], "i:b:g:n:")
     OPT = dict(opts)
     os.environ["CUDA_VISIBLE_DEVICES"] = OPT['-g'] if '-g' in OPT else "0"
-    agent_path = OPT['-i'] if '-i' in OPT else 'data/agent.pkg'
+    agent_path = OPT['-i'] if '-i' in OPT else 'data/agent.pkg' # you have to change this if you trained your own model in a different directory
     out_path = OPT['-o'] if '-o' in OPT else 'mol.txt'
     pop_size = OPT['-n'] if '-n' in OPT else 10000
     batch_size = OPT['-b'] if '-b' in OPT else 500
