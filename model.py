@@ -2,6 +2,8 @@
 # This file defined all of the architectures of deep neural networks (DNN)
 # that are used in this project similar to Scikit-learn style.
 # All of the DNN models are implemented by Pytorch ( >= version 1.0)
+import os
+
 import numpy as np
 import torch
 from torch import nn
@@ -40,6 +42,9 @@ class Base(nn.Module):
         best_loss = np.inf
         # record the epoch when optimal model is saved.
         last_save = 0
+        out_dir = os.path.dirname(out)
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
         log = open(out + '.log', 'w')
         for epoch in range(epochs):
             t0 = time.time()
