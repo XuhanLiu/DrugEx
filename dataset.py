@@ -125,6 +125,7 @@ def A2AR(input, out):
 
 
 if __name__ == '__main__':
-    ZINC('zinc/', 'data/ZINC.txt')
-    corpus('data/zinc.txt', 'data/zinc')
+    # ZINC('zinc/', 'data/ZINC.txt') # uncomment this if you want to update the ZINC corpus (you will need to download the ZINC database and generate the ZINC.txt)
+    corpus('data/ZINC.txt', 'data/zinc')
+    corpus('data/A2AR_raw.txt', 'data/chembl')
     A2AR('data/A2AR_raw.txt', 'data/CHEMBL251.txt')
