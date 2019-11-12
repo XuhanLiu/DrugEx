@@ -103,7 +103,7 @@ def A2AR(input, out):
             and replacing the nitrogen electrical group to nitrogen atom "N".
     """
     df = pd.read_table(input)
-    df = df[['CMPD_CHEMBLID', 'CANONICAL_SMILES', 'PCHEMBL_VALUE']]
+    df = df[['CMPD_CHEMBLID', 'CANONICAL_SMILES', 'PCHEMBL_VALUE', 'ACTIVITY_COMMENT']]
     df = df.dropna()
     for i, row in df.iterrows():
         # replacing the nitrogen electrical group to nitrogen atom "N"
