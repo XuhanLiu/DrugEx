@@ -45,8 +45,8 @@ if __name__ == '__main__':
     opts, args = getopt.getopt(sys.argv[1:], "i:b:g:n:")
     OPT = dict(opts)
     os.environ["CUDA_VISIBLE_DEVICES"] = OPT['-g'] if '-g' in OPT else "0"
-    agent_path = OPT['-i'] if '-i' in OPT else 'data/agent.pkg' # you have to change this if you trained your own model in a different directory
-    out_path = OPT['-o'] if '-o' in OPT else 'mol.txt'
-    pop_size = OPT['-n'] if '-n' in OPT else 10000
-    batch_size = OPT['-b'] if '-b' in OPT else 500
+    agent_path = OPT['-i'] if '-i' in OPT else 'data/agent.pkg' # FIXME: at this point this default file does not exist
+    out_path = OPT['-o'] if '-o' in OPT else 'output/designer_mols.txt'
+    pop_size = int(OPT['-n']) if '-n' in OPT else 10000
+    batch_size = int(OPT['-b']) if '-b' in OPT else 500
     generate(agent_path, out_path, num=pop_size)
