@@ -118,7 +118,7 @@ def main():
     best_score = 0
     log = open(agent_path + '.log', 'w')
 
-    for epoch in range(1000):
+    for epoch in range(200):
         print('\n--------\nEPOCH %d\n--------' % (epoch + 1))
         print('\nForward Policy Gradient Training Generator : ')
         Policy_gradient(agent, environ, explore=explore)
