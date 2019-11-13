@@ -246,9 +246,10 @@ def main(feat, alg='RF', reg=False):
     out = 'output/%s_%s_%s' % (alg, 'reg' if reg else 'cls', feat)
 
     # Model training and saving
-    # model = RandomForestClassifier(n_estimators=1000, n_jobs=10)
-    # model.fit(X, y[:, 0])
-    # joblib.dump(model, out+'.pkg')
+    if alg == "RF":
+        model = RandomForestClassifier(n_estimators=1000, n_jobs=10)
+        model.fit(X, y[:, 0])
+        joblib.dump(model, out+'.pkg')
 
     # Cross validation and independent test
     data = pd.DataFrame()
