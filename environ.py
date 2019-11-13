@@ -241,6 +241,8 @@ def main(feat, alg='RF', reg=False):
     # ECFP6 fingerprints extraction
     X = util.Environment.ECFP_from_SMILES(df.CANONICAL_SMILES).values
 
+    if not os.path.exists('output'):
+        os.makedirs('output')
     out = 'output/%s_%s_%s' % (alg, 'reg' if reg else 'cls', feat)
 
     # Model training and saving
