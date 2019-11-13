@@ -24,7 +24,7 @@ def main():
         print('Exploitation network begins to be trained...')
         zinc = util.MolData("data/zinc_corpus.txt", voc, token='SENT')
         zinc = DataLoader(zinc, batch_size=BATCH_SIZE, shuffle=True, drop_last=True, collate_fn=zinc.collate_fn)
-        prior.fit(zinc, out=netP_path)
+        prior.fit(zinc, out=netP_path, epochs=300)
         print('Exploitation network training is finished!')
     prior.load_state_dict(T.load(netP_path + '.pkg'))
 
@@ -44,7 +44,7 @@ def main():
     valid = DataLoader(valid, batch_size=BATCH_SIZE, collate_fn=valid.collate_fn)    
 
     print('Exploration network begins to be trained...')
-    explore.fit(train, loader_valid=valid, out=netE_path, epochs=1000)
+    explore.fit(train, loader_valid=valid, out=netE_path, epochs=400)
     print('Exploration network training is finished!')
 
 
