@@ -439,7 +439,8 @@ class Generator(nn.Module):
                         loss_valid, size = 0, 0
                         for j, batch in enumerate(loader_valid):
                             size += batch.size(0)
-                            loss_valid += -self.likelihood(batch.to(util.dev)).sum()
+                            with torch.no_grad():
+                                loss_valid += -self.likelihood(batch.to(util.dev)).sum()
                         print(size)
                         loss_valid = loss_valid / size / self.voc.max_len
                         if loss_valid.item() < best_error:
