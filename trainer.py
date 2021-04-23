@@ -31,7 +31,7 @@ if __name__ == "__main__":
     # Chose the desirability function
     objs = [A1, A2A, ERG]
 
-	if scheme == 'WS':
+    if scheme == 'WS':
         mod1 = utils.ClippedScore(lower_x=3, upper_x=10)
         mod2 = utils.ClippedScore(lower_x=10, upper_x=3)
         ths = [0.5] * 3
