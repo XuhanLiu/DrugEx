@@ -153,12 +153,7 @@ Acknowledgement
 ===============
 We thank the following Git repositories that gave me a lot of inspirations:
    
-<<<<<<< HEAD
 1. [REINVENT](https://github.com/MarcusOlivecrona/REINVENT)
 2. [ORGAN](https://github.com/gablg1/ORGAN)
 3. [SeqGAN](https://github.com/LantaoYu/SeqGAN)
-=======
-1. REINVENT    https://github.com/MarcusOlivecrona/REINVENT
-2. ORGAN       https://github.com/gablg1/ORGAN
-3. SeqGAN      https://github.com/LantaoYu/SeqGAN
->>>>>>> master
+
