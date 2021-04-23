@@ -20,17 +20,19 @@ After achieving dramatic breakthrough in both image recognition, natural languag
 
 Workflow
 ========
-![Fig1](figures/fig_1.tif)
-
+![Fig1](figures/fig_1.png)
 
 Exploration Strategy
 ====================
-![Fig2](figures/fig_3.tif)
+![Fig2](figures/fig_2.png)
 
 Examples
 =========
-![Fig3](figures/fig_7A.tif)
-![Fig4](figures/fig_7B.tif)
+A: Multi-Target Case
+![Fig3](figures/fig_3A.png)
+
+B: Target-Specific Case
+![Fig4](figures/fig_3B.png)
 
 Dependencies
 ============
