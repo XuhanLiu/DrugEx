@@ -7,11 +7,9 @@ By Xuhan Liu & Gerard J.P. van Westen, on March 8th 2021
 
 Please see the LICENSE file for the license terms for the software. Basically it's free to academic users. If you do wish to sell the software or use it in a commercial product, then please contact the following E-mails:
 
-   Xuhan Liu (First Author): x.liu@lacdr.leidenuniv.nl 
+   [Xuhan Liu](mailto:x.liu@lacdr.leidenuniv.nl) (First Author): 
 
-   or
-
-   Gerard J.P. van Westen (Correspondent Author): gerard@lacdr.leidenuniv.nl
+   [Gerard J.P. van Westen](mailto:gerard@lacdr.leidenuniv.nl) (Correspondent Author): 
 
 
 Introduction
@@ -41,78 +39,120 @@ We recommend Anaconda to manage the version of Python and installed packages.
 
 Secondly, all the following packages are installed in your machine:
 
-    1. Numpy: (version >= 1.19)
+**1. [Numpy](https://numpy.org/)** (version >= 1.19)
 
         $ conda install numpy
 
-    2. Scikit-Learn (version >= 0.23)
+**2. [Scikit-Learn](https://scikit-learn.org/stable/)** (version >= 0.23)
 
         $ conda install scikit-learn
 
-    3. Pandas (version >= 1.2.2)
+**3. [Pandas](https://pandas.pydata.org/)** (version >= 1.2.2)
 
         $ conda install pandas
 
-    4. PyTorch (version == 1.6)
+**4. [PyTorch](https://PyTorch.org/)**  (version == 1.6)
 
         $ conda install pytorch torchvision cudatoolkit=x.x -c pytorch 
-        
-        Note: it depends on the GPU device and CUDA tookit (x.x is the version of CUDA)
+    
+        Note: it depends on the GPU device and CUDA tookit 
+              (x.x is the version of CUDA)
 
-    5. Matplotlib (version >= 2.0)
+**5. [Matplotlib](https://matplotlib.org/)** (version >= 2.0)
 
         $ conda install matplotlib
-       
-    6. RDKit (version )
-    
-       $ conda install -c rdkit rdkit
+   
+**6. [RDKit](https://www.rdkit.org/)** (version >= 2020.03)
+
+        $ conda install -c rdkit rdkit
 Usage
 ======
 For designing the novel drug molecules with SMILES representation, you should do the following steps sequentially by running scripts:
 
-    1. dataset.py: 
-        Preparing your dataset for pre-training and fine-tuning the RNN model as initial states of exploitation 
-        network and exploration network.
-    2. environ.py:
-        Training your predictor as the environment for providing the final reward for the action from the agent. 
-        The performance can also be evaluated through n-fold cross validation and independent test. 
-    3. pretrainer.py:
-        Pre-training the RNN model as initialization of exploitation network acted as agent for molecule design.
-        Fine-tuning the same RNN model as agent net which will be fixed as an pertubation to enlarge the 
-        diversity.
-    4. train.py: 
-        Training the DrugEx model under the reinforcement learning framework. During the training process, both of 
-        the exploitation and exploitation network will be involved in the SMILES generation, and the mutation rate 
-        controls the contribution that exploration network makes.
-    5. sampler.py:
-        Finally, generating the SMILES format molecules with well-trained RNN model (pre-trained/fine-tuned model 
-        or DrugEx model).
+1. dataset.py:
+ 
+    Preparing your dataset for pre-training and fine-tuning the RNN model as initial states of exploitation 
+    network and exploration network.
+    
+2. environ.py:
+
+    Training your predictor as the environment for providing the final reward for the action from the agent. 
+    The performance can also be evaluated through n-fold cross validation and independent test. 
+
+3. pretrainer.py:
+
+    Pre-training the RNN model as initialization of exploitation network acted as agent for molecule design.
+    Fine-tuning the same RNN model as agent net which will be fixed as an pertubation to enlarge the 
+    diversity.
+    
+4. train.py: 
+
+    Training the DrugEx model under the reinforcement learning framework. During the training process, both of 
+    the exploitation and exploitation network will be involved in the SMILES generation, and the mutation rate 
+    controls the contribution that exploration network makes.
+    
+5. sampler.py:
+
+    Finally, generating the SMILES format molecules with well-trained RNN model (pre-trained/fine-tuned model 
+    or DrugEx model).
+    
+6. figure.py:
+    It provides a variety of the methods to measure the performance of every step during the training process of 
+    DrugEx, and form the figure for results visualization.     
+
         
 In addition, this toolkit also provides some other scripts for definition of special data structures, model architectures and coefficient measurements, etc.
 
-    1. models/*.py:
-        It contains all of the deep learning models that possibly used in this project, including single/multiple 
-        fully-connected regression/classification models, RNN generative model and highway CNN classification model.
-    2. utils/vocab.py: 
-        It defines some special data structures, such as vocabulary of SMILES tokens, molecule dataset, environment 
-        and some methods for SMILES checking. 
-        The statistical methods that extracting properties from generated molecules.
-    3. utils/metric.py:
-        The statistical methods that extracting properties from generated molecules.
-    4. figure.py:
-        It provides a variety of the methods to measure the performance of every step during the training process of 
-        DrugEx, and form the figure for results visualization.     
+1. models/*.py:
+
+    It contains all of the deep learning models that possibly used in this project, including single/multiple 
+    fully-connected regression/classification models, RNN generative model and highway CNN classification model.
+
+2. utils/vocab.py: 
+
+    It defines some special data structures, such as vocabulary of SMILES tokens, molecule dataset, environment 
+    and some methods for SMILES checking. 
+    The statistical methods that extracting properties from generated molecules.
+
+3. utils/metric.py:
+
+    The statistical methods that extracting properties from generated molecules.
+
+4. utils/fingerprints.py:
+
+    There are a variety of chemical fingerprints calculations, such as ECFP, MACCS etc.
+
+5. utils/modifier.py
+
+    It provides a variety of desirability function to normalize the scoring furntions. 
+    For more details, please check [GuacaMol](https://pubs.acs.org/doi/10.1021/acs.jcim.8b00839) benchemark.
+
+6. utils/objective.py
+
+    It provides the construction of different scoring functions, including similary score,
+    chemical properties, QSAR modelling, etc. Moreoever, it can also integrate multiple 
+    objective into an environment to calculate reward for the agent. 
+
+7. utils/nsgaii.py
+
+    The implementation of non-dominate sorting and crowding distance algorithm (NSGAII). 
+    Importantly, we employ PyTorch to accelerate its performance and also modify the
+    calculation of crowding distance with Tanimoto-distance.
+
+8. utils/sacorer.py  
+  
+    The implementation of SA score to measure the synthesability score of each molecule.
+    More details about SA score can be found [here](https://jcheminf.biomedcentral.com/articles/10.1186/1758-2946-1-8)
 
 References
 ==========
-Liu X, Ye K, van Vlijmen HWT, AP IJ, van Westen GJP (2019) An exploration strategy improves the diversity of de novo ligands using deep reinforcement learning: a case for the adenosine A2A receptor. Journal of cheminformatics 11 (1):35. doi:10.1186/s13321-019-0355-6
-https://jcheminf.biomedcentral.com/articles/10.1186/s13321-019-0355-6
+[Liu X, Ye K, van Vlijmen HWT, AP IJ, van Westen GJP (2019) An exploration strategy improves the diversity of de novo ligands using deep reinforcement learning: a case for the adenosine A2A receptor. Journal of cheminformatics 11 (1):35. doi:10.1186/s13321-019-0355-6](https://jcheminf.biomedcentral.com/articles/10.1186/s13321-019-0355-6)
 
 
 Acknowledgement
 ===============
 We thank the following Git repositories that gave me a lot of inspirations:
    
-1. REINVENT    https://github.com/MarcusOlivecrona/REINVENT
-2. ORGAN       https://github.com/gablg1/ORGAN
-3. SeqGAN      https://github.com/LantaoYu/SeqGAN
+1. [REINVENT](https://github.com/MarcusOlivecrona/REINVENT)
+2. [ORGAN](https://github.com/gablg1/ORGAN)
+3. [SeqGAN](https://github.com/LantaoYu/SeqGAN)
