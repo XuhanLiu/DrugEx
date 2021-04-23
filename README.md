@@ -140,22 +140,9 @@ In addition, this toolkit also provides some other scripts for definition of spe
 
 8. utils/sacorer.py  
   
-    The implementation of SA score to measure the synthesability score of each molecule.
+    The implementation of SA score to measure the synthezability score of each molecule.
     More details about SA score can be found [here](https://jcheminf.biomedcentral.com/articles/10.1186/1758-2946-1-8)
-=======
-    1. models/*.py:
-        It contains all of the deep learning models that possibly used in this project, including single/multiple 
-        fully-connected regression/classification models, RNN generative model and highway CNN classification model.
-    2. utils/structure.py: 
-        It defines some special data structures, such as vocabulary of SMILES tokens, molecule dataset, environment 
-        and some methods for SMILES checking. 
-        The statistical methods that extracting properties from generated molecules.
-    3. utils/metric.py:
-        The statistical methods that extracting properties from generated molecules.
-    4. figure.py:
-        It provides a variety of the methods to measure the performance of every step during the training process of 
-        DrugEx, and form the figure for results visualization.     
->>>>>>> master
+
 
 References
 ==========
