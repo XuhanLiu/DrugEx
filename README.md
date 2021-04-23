@@ -102,7 +102,6 @@ For designing the novel drug molecules with SMILES representation, you should do
         
 In addition, this toolkit also provides some other scripts for definition of special data structures, model architectures and coefficient measurements, etc.
 
-<<<<<<< HEAD
 1. models/*.py:
 
     It contains all of the deep learning models that possibly used in this project, including single/multiple 
