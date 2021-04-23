@@ -103,6 +103,7 @@ For designing the novel drug molecules with SMILES representation, you should do
         
 In addition, this toolkit also provides some other scripts for definition of special data structures, model architectures and coefficient measurements, etc.
 
+<<<<<<< HEAD
 1. models/*.py:
 
     It contains all of the deep learning models that possibly used in this project, including single/multiple 
@@ -143,6 +144,20 @@ In addition, this toolkit also provides some other scripts for definition of spe
   
     The implementation of SA score to measure the synthesability score of each molecule.
     More details about SA score can be found [here](https://jcheminf.biomedcentral.com/articles/10.1186/1758-2946-1-8)
+=======
+    1. models/*.py:
+        It contains all of the deep learning models that possibly used in this project, including single/multiple 
+        fully-connected regression/classification models, RNN generative model and highway CNN classification model.
+    2. utils/structure.py: 
+        It defines some special data structures, such as vocabulary of SMILES tokens, molecule dataset, environment 
+        and some methods for SMILES checking. 
+        The statistical methods that extracting properties from generated molecules.
+    3. utils/metric.py:
+        The statistical methods that extracting properties from generated molecules.
+    4. figure.py:
+        It provides a variety of the methods to measure the performance of every step during the training process of 
+        DrugEx, and form the figure for results visualization.     
+>>>>>>> master
 
 References
 ==========
@@ -153,6 +168,12 @@ Acknowledgement
 ===============
 We thank the following Git repositories that gave me a lot of inspirations:
    
+<<<<<<< HEAD
 1. [REINVENT](https://github.com/MarcusOlivecrona/REINVENT)
 2. [ORGAN](https://github.com/gablg1/ORGAN)
 3. [SeqGAN](https://github.com/LantaoYu/SeqGAN)
+=======
+1. REINVENT    https://github.com/MarcusOlivecrona/REINVENT
+2. ORGAN       https://github.com/gablg1/ORGAN
+3. SeqGAN      https://github.com/LantaoYu/SeqGAN
+>>>>>>> master
