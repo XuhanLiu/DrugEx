@@ -93,7 +93,7 @@ In addition, this toolkit also provides some other scripts for definition of spe
     1. models/*.py:
         It contains all of the deep learning models that possibly used in this project, including single/multiple 
         fully-connected regression/classification models, RNN generative model and highway CNN classification model.
-    2. utils/vocab.py: 
+    2. utils/structure.py: 
         It defines some special data structures, such as vocabulary of SMILES tokens, molecule dataset, environment 
         and some methods for SMILES checking. 
         The statistical methods that extracting properties from generated molecules.
