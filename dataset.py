@@ -1,130 +1,87 @@
-#!/usr/bin/env python
-# This file is used for dataset construction, it contains two dataset as follows:
-# 1. ZINC set: it is used for pre-training model
-# 2. A2AR set: it is used for fine-tuning model and training predictor
 import pandas as pd
 from rdkit import Chem
+from rdkit import rdBase
 from tqdm import tqdm
-from util import Voc
-import numpy as np
-import re
-import os
+import gzip
+import utils
+rdBase.DisableLog('rdApp.info')
 
 
-def corpus(input, out):
-    """Constructing the molecular corpus by splitting each SMILES into
-    a range of tokens contained in vocabulary.
+def corpus(input, output, is_sdf=False, requires_clean=True, is_isomerice=False):
+    """ Constructing dataset with SMILES-based molecules, each molecules will be decomposed
+        into a series of tokens. In the end, all the tokens will be put into one set as vocaulary.
 
-    Arguments:
-        input (str): the path of tab-delimited data file that contains CANONICAL_SMILES.
-        out (str): the path for vocabulary (containing all of tokens for SMILES construction)
-            and output table (including CANONICAL_SMILES and whitespace delimited token sentence)
+        Arguments:
+            input (string): The file path of input, either .sdf file or tab-delimited file
+
+            output (string): The file path of output
+
+            is_sdf (bool): Designate if the input file is sdf file or not
+
+            requires_clean (bool): If the molecule is required to be clean, the charge metal will be
+                    removed and only the largest fragment will be kept.
+
+            is_isomerice (bool): If the molecules in the dataset keep conformational information. If not,
+                    the conformational tokens (e.g. @@, @, \, /) will be removed.
+
     """
-    df = pd.read_table(input).CANONICAL_SMILES
-    voc = Voc('data/voc.txt')
+    if is_sdf:
+        # deal with sdf file with RDkit
+        inf = gzip.open(input)
+        fsuppl = Chem.ForwardSDMolSupplier(inf)
+        df = []
+        for mol in fsuppl:
+            try:
+                df.append(Chem.MolToSmiles(mol, is_isomerice))
+            except:
+                print(mol)
+    else:
+        # deal with table file
+        df = pd.read_table(input).Smiles.dropna()
+    voc = utils.Voc()
     words = set()
     canons = []
     tokens = []
-    smiles = set()
-    for smile in tqdm(df):
-        # replacing the radioactive atom into nonradioactive atom
-        smile = re.sub('\[\d+', '[', smile)
-        # reserving the largest one if the molecule contains more than one fragments,
-        # which are seperated by '.'.
-        if '.' in smile:
-            frags = smile.split('.')
-            ix = np.argmax([len(frag) for frag in frags])
-            smile = frags[ix]
-        # if it doesn't contain carbon atom, it cannot be drug-like molecule, just remove
-        if smile.count('C') + smile.count('c') < 2:
-            continue
-        if smile in smiles:
-            print(smile)
-        smiles.add(smile)
-    # collecting all of the tokens in the sentences for vocabulary construction.
+    if requires_clean:
+        smiles = set()
+        for smile in tqdm(df):
+            try:
+                smile = utils.clean_mol(smile, is_isomeric=is_isomerice)
+                smiles.add(Chem.CanonSmiles(smile))
+            except:
+                print('Parsing Error:', smile)
+    else:
+        smiles = df.values
     for smile in tqdm(smiles):
-        try:
-            token = voc.tokenize(smile)
-            if len(token) <= 100:
-                words.update(token)
-                canons.append(Chem.CanonSmiles(smile, 0))
-                tokens.append(' '.join(token))
-        except:
-            print(smile)
-    # persisting the vocabulary on the hard drive.
-    log = open(out + '_voc.txt', 'w')
+        token = voc.tokenize(smile)
+        # Only collect the organic molecules
+        if {'C', 'c'}.isdisjoint(token):
+            print('Warning:', smile)
+            continue
+        # Remove the metal tokens
+        if not {'[Na]', '[Zn]'}.isdisjoint(token):
+            print('Redudent', smile)
+            continue
+        # control the minimum and maximum of sequence length.
+        if 10 < len(token) <= 100:
+            words.update(token)
+            canons.append(smile)
+            tokens.append(' '.join(token))
+
+    # output the vocabulary file
+    log = open(output + '_voc.txt', 'w')
     log.write('\n'.join(sorted(words)))
     log.close()
 
-    # saving the canonical smiles and token sentences as a table into hard drive.
+    # output the dataset file as tab-delimited file
     log = pd.DataFrame()
-    log['CANONICAL_SMILES'] = canons
-    log['SENT'] = tokens
-    log.drop_duplicates(subset='CANONICAL_SMILES')
-    log.to_csv(out + '_corpus.txt', sep='\t', index=None)
-
-
-def ZINC(folder, out):
-    """Uniformly random selecting molecule from ZINC database for Construction of ZINC set,
-    which is used for pre-trained model training.
-
-    Arguments:
-        folder (str): the directory of the ZINC database, it contains all of the molecules
-            that are seperated into different files based on the logP and molecular weight.
-        out (str): the file path of output dataframe, it contains all of randomly selected molecules,
-            also including its SMILES string, logP and molecular weight
-    """
-    files = os.listdir(folder)
-    points = [(i, j) for i in range(200, 600, 25) for j in np.arange(-2, 6, 0.5)]
-    select = pd.DataFrame()
-    for symbol in tqdm([i+j for i in 'ABCDEFGHIJK' for j in 'ABCDEFGHIJK']):
-        zinc = pd.DataFrame()
-        for fname in files:
-            if not fname.endswith('.txt'): continue
-            if not fname.startswith(symbol): continue
-            df = pd.read_table(folder+fname)[['mwt', 'logp', 'smiles']]
-            df.columns = ['MWT', 'LOGP', 'CANONICAL_SMILES']
-            zinc = zinc.append(df)
-        for mwt, logp in points:
-            df = zinc[(zinc.MWT > mwt) & (zinc.MWT <= (mwt + 25))]
-            df = df[(df.LOGP > logp) & (df.LOGP <= (logp+0.5))]
-            if len(df) > 2500:
-                df = df.sample(2500)
-            select = select.append(df)
-    select.to_csv(out, sep='\t', index=None)
-
-
-def A2AR(input, out):
-    """Construction of A2AR set, which is used for fine-tuned model and predictor training.
-    Arguments:
-        input (str): the path of tab-delimited data file that contains CANONICAL_SMILES.
-        out (str): the path saving the refined data after filtering the invalid data,
-            including removing molecule contained metal atom, reserving the largest fragments,
-            and replacing the nitrogen electrical group to nitrogen atom "N".
-    """
-    df = pd.read_table(input)
-    df = df[['CMPD_CHEMBLID', 'CANONICAL_SMILES', 'PCHEMBL_VALUE']]
-    df = df.dropna()
-    for i, row in df.iterrows():
-        # replacing the nitrogen electrical group to nitrogen atom "N"
-        smile = row['CANONICAL_SMILES'].replace('[NH+]', 'N').replace('[NH2+]', 'N').replace('[NH3+]', 'N')
-        # removing the radioactivity of each atom
-        smile = re.sub('\[\d+', '[', smile)
-        # reserving the largest fragments
-        if '.' in smile:
-            frags = smile.split('.')
-            ix = np.argmax([len(frag) for frag in frags])
-            smile = frags[ix]
-        # Transforming into canonical SMILES based on the Rdkit built-in algorithm.
-        df.loc[i, 'CANONICAL_SMILES'] = Chem.CanonSmiles(smile, 0)
-        # removing molecule contained metal atom
-        if '[Au]' in smile or '[As]' in smile or '[Hg]' in smile or '[Se]' in smile or smile.count('C') + smile.count('c') < 2:
-            df = df.drop(i)
-    # df = df.drop_duplicates(subset='CANONICAL_SMILES')
-    df.to_csv(out, index=False, sep='\t')
+    log['Smiles'] = canons
+    log['Token'] = tokens
+    log.drop_duplicates(subset='Smiles')
+    log.to_csv(output + '_corpus.txt', sep='\t', index=False)
 
 
 if __name__ == '__main__':
-    ZINC('zinc/', 'data/ZINC.txt')
-    corpus('data/zinc.txt', 'data/zinc')
-    A2AR('data/A2AR_raw.txt', 'data/CHEMBL251.txt')
+    corpus('data/chembl_26.sdf.gz', 'data/chembl', is_sdf=True)
+    corpus('data/LIGAND_RAW.tsv', 'data/ligand', is_sdf=False)
+    # corpus('data/guacamol.smiles', 'data/guacamol', requires_clean=True, is_sdf=False)
