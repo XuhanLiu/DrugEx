@@ -120,7 +120,7 @@ def A2AR(input, out):
         # removing molecule contained metal atom
         if '[Au]' in smile or '[As]' in smile or '[Hg]' in smile or '[Se]' in smile or smile.count('C') + smile.count('c') < 2:
             df = df.drop(i)
-    # df = df.drop_duplicates(subset='CANONICAL_SMILES')
+    df = df.drop_duplicates(subset='CANONICAL_SMILES')
     df.to_csv(out, index=False, sep='\t')
 
 
