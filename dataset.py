@@ -125,6 +125,6 @@ def A2AR(input, out):
 
 
 if __name__ == '__main__':
-    ZINC('zinc/', 'data/ZINC.txt')
+    // ZINC('zinc/', 'data/ZINC.txt')
     corpus('data/zinc.txt', 'data/zinc')
     A2AR('data/A2AR_raw.txt', 'data/CHEMBL251.txt')
