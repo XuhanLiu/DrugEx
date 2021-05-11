@@ -30,7 +30,7 @@ def main():
 
     # Fine-tuning the RNN model with A2AR set as exploration stragety
     explore = model.Generator(voc)
-    df = pd.read_table('data/chembl_corpus.txt').drop_duplicates('CANONICAL_SMILES')
+    df = pd.read_table('data/chembl251_corpus.txt').drop_duplicates('CANONICAL_SMILES')
     valid = df.sample(BATCH_SIZE)
     train = df.drop(valid.index)
     explore.load_state_dict(T.load(netP_path + '.pkg'))
