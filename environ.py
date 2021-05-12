@@ -218,7 +218,7 @@ def NB(X, y, X_ind, y_ind):
 # Model performance and saving
 def main(feat, alg='RF', reg=False):
     pair = ['CMPD_CHEMBLID', 'CANONICAL_SMILES', 'PCHEMBL_VALUE', 'ACTIVITY_COMMENT']
-    df = pd.read_table('data/CHEMBL251.txt')
+    df = pd.read_table('data/A2AR_raw.txt')
     df = df[pair].set_index(pair[0])
     df[pair[2]] = df.groupby(pair[0]).mean()
     # The molecules that have PChEMBL value
