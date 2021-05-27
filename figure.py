@@ -128,13 +128,6 @@ def fig9():
     for obj in ['OBJ1', 'OBJ3']:
         df = pd.read_table('benchmark/old/evolve_PR_REG_%s.tsv' % obj)
         df = df[df.DESIRE == 1].drop_duplicates(subset='Smiles')
-        # ref = pd.read_table('benchmark/old/GPCR_REG_%s.tsv' % obj)
-        # ref = ref[ref.DESIRE == 1].drop_duplicates(subset='Smiles')
-        # ref = [Chem.MolFromSmiles(s) for s in ref.Smiles]
-        # ref = [AllChem.GetMorganFingerprint(s, 3) for s in ref]
-        # fps = [Chem.MolFromSmiles(s) for s in df.Smiles]
-        # fps = [AllChem.GetMorganFingerprint(s, 3) for s in fps]
-        # df['Sim'] = [max(DataStructs.BulkTanimotoSimilarity(fp, ref)) for fp in fps]
         sub, mw = [], []
         ribose = Chem.MolFromSmiles('OC1COCC1O')
         for i, row in df.iterrows():
@@ -249,12 +242,11 @@ if __name__ == '__main__':
     colors = ['#ff7f0e', '#1f77b4', '#d62728', '#2ca02c', '#9467bd', '#101010']  # orange, blue, green, red, purple
     paths = {'DrugEx v1': 'drugex', 'DrugEx v2': 'evolve',
              'ORGANIC': 'organic', 'REINVENT': 'reinvent'}
-    # fig4(['CHEMBL226', 'CHEMBL251', 'CHEMBL240'], 'figure/fig_4.tif')
-    # fig6(paths)
-    # fig5({'LIGAND': 'GPCR', 'DrugEx v1': 'drugex', 'DrugEx v2': 'evolve',
-    #       'ORGANIC': 'organic', 'REINVENT': 'reinvent'}, out='figure/figure_5.tif')
-    # fig6(paths)
+    fig4(['CHEMBL226', 'CHEMBL251', 'CHEMBL240'], 'figure/fig_4.tif')
+    fig5({'LIGAND': 'GPCR', 'DrugEx v1': 'drugex', 'DrugEx v2': 'evolve',
+          'ORGANIC': 'organic', 'REINVENT': 'reinvent'}, out='figure/figure_5.tif')
+    fig6(paths)
     # Figure S1
-    # figS1({'LIGAND': 'GPCR', 'ε = 0e+00': '0e+00', 'ε = 1e-02': '1e-02',
-    #       'ε = 1e-03': '1e-03', 'ε = 1e-04': '1e-04'}, out='figure/fig_S1.tif')
+    figS1({'LIGAND': 'GPCR', 'ε = 0e+00': '0e+00', 'ε = 1e-02': '1e-02',
+          'ε = 1e-03': '1e-03', 'ε = 1e-04': '1e-04'}, out='figure/fig_S1.tif')
     fig9()
