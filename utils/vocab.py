@@ -4,49 +4,20 @@ from rdkit import Chem
 from rdkit import rdBase
 import numpy as np
 from typing import List, Iterable, Optional
+from rdkit.Chem.MolStandardize import rdMolStandardize
 
 torch.set_num_threads(1)
 rdBase.DisableLog('rdApp.error')
 dev = torch.device('cuda')
 
 
-def canonicalize(smiles: str, include_stereocenters=True) -> Optional[str]:
-    """
-    Canonicalize the SMILES strings with RDKit.
-
-    The algorithm is detailed under https://pubs.acs.org/doi/full/10.1021/acs.jcim.5b00543
-
-    Args:
-        smiles: SMILES string to canonicalize
-        include_stereocenters: whether to keep the stereochemical information in the canonical SMILES string
-
-    Returns:
-        Canonicalized SMILES string, None if the molecule is invalid.
-    """
-
+def clean_mol(smiles: str, is_isomeric=False) -> str:
     mol = Chem.MolFromSmiles(smiles)
-
+    mol = rdMolStandardize.ChargeParent(mol)
     if mol is not None:
-        return Chem.MolToSmiles(mol, isomericSmiles=include_stereocenters)
+        return Chem.MolToSmiles(mol, isomericSmiles=is_isomeric)
     else:
         return ''
-
-
-def canonicalize_list(smiles_list: Iterable[str], include_stereocenters=True) -> List[str]:
-    """
-    Canonicalize a list of smiles. Filters out repetitions and removes corrupted molecules.
-
-    Args:
-        smiles_list: molecules as SMILES strings
-        include_stereocenters: whether to keep the stereochemical information in the canonical SMILES strings
-
-    Returns:
-        The canonicalized and filtered input smiles.
-    """
-
-    canonicalized_smiles = [canonicalize(smiles, include_stereocenters) for smiles in smiles_list]
-
-    return canonicalized_smiles
 
 
 class Voc:
