@@ -3,14 +3,10 @@ import pandas as pd
 import numpy as np
 from rdkit import rdBase
 from rdkit.Chem import Draw
-from metric import logP_mw, dimension, properties, converage, training_process
+from utils.metric import dimension
 import seaborn as sns
 from scipy import stats
-from sklearn import metrics
 from matplotlib import pyplot as plt
-from scipy.stats import pearsonr
-from rdkit import DataStructs
-from rdkit.Chem import AllChem
 from rdkit.Chem import Descriptors as desc
 
 plt.switch_backend('Agg')
