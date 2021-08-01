@@ -19,8 +19,8 @@ if __name__ == "__main__":
     os.environ["CUDA_VISIBLE_DEVICES"] = OPT['-g'] if '-g' in OPT else "0"
     case = OPT['-c'] if '-c' in OPT else 'OBJ3'
     z = OPT['-z'] if '-z' in OPT else 'REG'
-    alg = OPT['-a'] if '-a' in OPT else 'reinvent'
-    scheme = OPT['-s'] if '-s' in OPT else 'WS'
+    alg = OPT['-a'] if '-a' in OPT else 'evolve'
+    scheme = OPT['-s'] if '-s' in OPT else 'PR'
 
     # construct the environment with three predictors
     keys = ['A1', 'A2A', 'ERG']
