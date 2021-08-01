@@ -20,8 +20,7 @@ def training(is_lstm=True):
 
     prior = models.Generator(voc, is_lstm=is_lstm)
     if not os.path.exists(netP_path + '.pkg'):
-        df = pd.read_table()
-        chembl = df.read_table("data/chembl_corpus.txt").Token
+        chembl = pd.read_table("data/chembl_corpus.txt").Token
         chembl = torch.LongTensor(voc.encode([seq.split(' ') for seq in chembl]))
         chembl = DataLoader(chembl, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
         prior.fit(chembl, out=netP_path, epochs=50)
