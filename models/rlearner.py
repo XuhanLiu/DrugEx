@@ -92,13 +92,12 @@ class Reinvent(PGLearner):
         prior (models.Generator): The prior network which is constructed by deep learning model
                                    and ensure the agent to generate molecules with correct grammar.
     """
-    def __init__(self, agent, env, prior, epsilon=60, beta=0.5):
+    def __init__(self, agent, env, prior, epsilon=60):
         super(Reinvent, self).__init__(agent, env, prior)
         for param in self.prior.parameters():
             param.requires_grad = False
         # self.agent.optim.lr = 0.0005
         self.epsilon = epsilon
-        self.beta = beta
 
     def policy_gradient(self):
         seqs = []
@@ -150,8 +149,9 @@ class DrugEx(PGLearner):
         prior (models.Generator): The pre-trained network which is constructed by deep learning model
                                    and ensure the agent to explore the approriate chemical space.
     """
-    def __init__(self, agent, env, prior=None, memory=None):
+    def __init__(self, agent, env, prior=None, memory=None, beta=0.1):
         super(DrugEx, self).__init__(agent, env, prior, memory=memory)
+        self.beta = beta
 
     def policy_gradient(self):
         seqs = []
@@ -164,7 +164,7 @@ class DrugEx(PGLearner):
         smiles = [self.agent.voc.decode(s) for s in seqs]
 
         scores = self.env.calc_reward(smiles, self.scheme)
-        ds = TensorDataset(seqs, torch.Tensor(scores).to(utils.dev))
+        ds = TensorDataset(seqs, torch.Tensor(scores-self.beta).to(utils.dev))
         loader = DataLoader(ds, batch_size=self.n_samples, shuffle=True)
         self.agent.PGLoss(loader)
 
