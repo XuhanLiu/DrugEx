@@ -36,7 +36,7 @@ def training(is_lstm=True):
     train = DataLoader(train, batch_size=BATCH_SIZE, shuffle=True)
 
     valid = torch.LongTensor(voc.encode([seq.split(' ') for seq in valid]))
-    valid = DataLoader(TensorDataset(valid), batch_size=BATCH_SIZE, shuffle=True)
+    valid = DataLoader(valid, batch_size=BATCH_SIZE, shuffle=True)
     print('Fine tuning progress begins to be trained...')
 
     prior.fit(train, loader_valid=valid, out=netE_path, epochs=1000, lr=lr)
