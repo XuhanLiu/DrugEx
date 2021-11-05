@@ -324,8 +324,8 @@ def mt_task(fname, out, reg=False, is_extra=True, time_split=False):
     df_data = df_data.sample(len(df_data))
     for alg in ['RF', 'MT_DNN', 'SVM', 'PLS', 'KNN', 'DNN']:
         if alg == 'MT_DNN':
-            test_x = utils.Predictor.calc_fp([Chem.MolFromSimles(mol) for mol in df_test.index])
-            data_x = utils.Predictor.calc_fp([Chem.MolFromSimles(mol) for mol in df_data.index])
+            test_x = utils.Predictor.calc_fp([Chem.MolFromSmiles(mol) for mol in df_test.index])
+            data_x = utils.Predictor.calc_fp([Chem.MolFromSmiles(mol) for mol in df_data.index])
             scaler = Scaler(); scaler.fit(data_x)
             test_x = scaler.transform(test_x)
             data_x = scaler.transform(data_x)
@@ -341,8 +341,8 @@ def mt_task(fname, out, reg=False, is_extra=True, time_split=False):
             for trg in trgs:
                 test_y = df_test[trg].dropna()
                 data_y = df_data[trg].dropna()
-                test_x = utils.Predictor.calc_fp([Chem.MolFromSimles(mol) for mol in test_y.index])
-                data_x = utils.Predictor.calc_fp([Chem.MolFromSimles(mol) for mol in data_y.index])
+                test_x = utils.Predictor.calc_fp([Chem.MolFromSmiles(mol) for mol in test_y.index])
+                data_x = utils.Predictor.calc_fp([Chem.MolFromSmiles(mol) for mol in data_y.index])
                 if alg != 'RF':
                     scaler = Scaler(); scaler.fit(data_x)
                     test_x = scaler.transform(test_x)
@@ -384,8 +384,8 @@ def single_task(feat, alg='RF', reg=False, is_extra=True):
     test = df.loc[test_ix].dropna()
     data = df.drop(test.index)
 
-    test_x = utils.Predictor.calc_fp([Chem.MolFromSimles(mol) for mol in test.index])
-    data_x = utils.Predictor.calc_fp([Chem.MolFromSimles(mol) for mol in data.index])
+    test_x = utils.Predictor.calc_fp([Chem.MolFromSmiles(mol) for mol in test.index])
+    data_x = utils.Predictor.calc_fp([Chem.MolFromSmiles(mol) for mol in data.index])
     out = 'output/single/%s_%s_%s' % (alg, 'REG' if reg else 'CLS', feat)
     if alg != 'RF':
         scaler = Scaler(); scaler.fit(data_x)
