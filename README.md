@@ -3,6 +3,8 @@ DrugEx RELEASE NOTES
 
 DrugEx v2 (Drug Explorer): De Novo Design of Drug Molecule by Pareto-based Multi-Objective Reinforcement Learning in Polypharmacology
 
+![Fig0](figures/logo.png)
+
 By Xuhan Liu & Gerard J.P. van Westen, on March 8th 2021
 
 Please see the LICENSE file for the license terms for the software. Basically it's free to academic users. If you do wish to sell the software or use it in a commercial product, then please contact us:
