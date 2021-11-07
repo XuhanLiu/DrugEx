@@ -3,19 +3,18 @@ DrugEx RELEASE NOTES
 
 DrugEx v2 (Drug Explorer): De Novo Design of Drug Molecule by Pareto-based Multi-Objective Reinforcement Learning in Polypharmacology
 
-![Fig0](figures/logo.png)
-
 By Xuhan Liu & Gerard J.P. van Westen, on March 8th 2021
 
 Please see the LICENSE file for the license terms for the software. Basically it's free to academic users. If you do wish to sell the software or use it in a commercial product, then please contact us:
 
    [Xuhan Liu](mailto:x.liu@lacdr.leidenuniv.nl) (First Author): 
 
-   [Gerard J.P. van Westen](mailto:gerard@lacdr.leidenuniv.nl) (Correspondent Author): 
+   [Gerard J.P. van Westen](mailto:gerard@lacdr.leidenuniv.nl) (Correspondent Author):
 
 Introduction
 =============
-After achieving dramatic breakthrough in both image recognition, 
+<img src='figures/logo.png' width=30% align=right>
+<p align=left width=70%>After achieving dramatic breakthrough in both image recognition, 
 natural language processing and game playing, the deep learning methods 
 are increasingly applied in drug discovery, e.g. recurrent neural 
 networks (RNNs) have been shown to be an effective method to generate 
@@ -44,7 +43,7 @@ is trained under the guidance of the reward to make sure it can generate
 more desired molecules after convergence of the training process. We 
 demonstrate generation of compounds with a diverse predicted selectivity 
 profile toward multiple targets, offering the potential of high efficacy 
-and lower toxicity.
+and lower toxicity.</p>
 
 Workflow
 ========
