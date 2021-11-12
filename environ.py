@@ -282,7 +282,7 @@ def DNN(X, y, X_ind, y_ind, out, reg=False):
         train_loader = DataLoader(train_set, batch_size=BATCH_SIZE)
         valid_set = TensorDataset(torch.Tensor(X[valided]), torch.Tensor(y[valided]))
         valid_loader = DataLoader(valid_set, batch_size=BATCH_SIZE)
-        net = NET(X.shape[1], y.shape[1], reg=reg)
+        net = NET(X.shape[1], y.shape[1], is_reg=reg)
         net.fit(train_loader, valid_loader, out='%s_%d' % (out, i), epochs=N_EPOCH, lr=LR)
         cvs[valided] = net.predict(valid_loader)
         inds += net.predict(indep_loader)
