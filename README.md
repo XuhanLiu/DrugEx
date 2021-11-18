@@ -180,7 +180,7 @@ References
 
 1. [Liu X, IJzerman AP, van Westen GJP. Computational Approaches for De Novo Drug Design: Past, Present, and Future. Methods Mol Biol. 2021;2190:139-65.](https://link.springer.com/protocol/10.1007%2F978-1-0716-0826-5_6)
 
-2. [Liu X, Ye K, van Vlijmen HWT, Emmerich MTM, IJzerman AP, van Westen GJP. DrugEx v2: De Novo Design of Drug Molecule by Pareto-based Multi-Objective Reinforcement Learning in Polypharmacology. Preprint.](https://chemrxiv.org/articles/preprint/DrugEx_v2_De_Novo_Design_of_Drug_Molecule_by_Pareto-based_Multi-Objective_Reinforcement_Learning_in_Polypharmacology/14474127) 
+2. [Liu X, Ye K, van Vlijmen HWT, Emmerich MTM, IJzerman AP, van Westen GJP. DrugEx v2: De Novo Design of Drug Molecules by Pareto-based Multi-Objective Reinforcement Learning in Polypharmacology. Journal of cheminformatics. 2021;8(1):13](https://doi.org/10.1186/s13321-021-00561-9) 
 
 3. [Liu X, Ye K, van Vlijmen HWT, IJzerman AP, van Westen GJP. An exploration strategy improves the diversity of de novo ligands using deep reinforcement learning: a case for the adenosine A2A receptor. Journal of cheminformatics. 2019;11(1):35.](https://jcheminf.biomedcentral.com/articles/10.1186/s13321-019-0355-6)
 
