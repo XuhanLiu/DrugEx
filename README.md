@@ -10,6 +10,9 @@ Please see the LICENSE file for the license terms for the software. Basically it
    [Xuhan Liu](mailto:x.liu@lacdr.leidenuniv.nl) (First Author): 
 
    [Gerard J.P. van Westen](mailto:gerard@lacdr.leidenuniv.nl) (Correspondent Author):
+   
+"A small step for exploring the drug space in need, A giant leap for exploiting a healthy state indeed"
+
 
 Introduction
 =============
