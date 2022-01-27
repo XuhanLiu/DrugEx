@@ -50,6 +50,17 @@ class Predictor:
         return fps
 
     @classmethod
+    def calc_ecfp_rd(cls, mols, radius=3):
+        fps = []
+        for i, mol in enumerate(mols):
+            try:
+                fp = AllChem.GetMorganFingerprint(mol, radius)
+            except:
+                fp = None
+            fps.append(fp)
+        return fps
+
+    @classmethod
     def calc_physchem(cls, mols):
         prop_list = ['MW', 'logP', 'HBA', 'HBD', 'Rotable', 'Amide',
                      'Bridge', 'Hetero', 'Heavy', 'Spiro', 'FCSP3', 'Ring',
@@ -234,11 +245,11 @@ class Env:
             ths (List): a list of float value, and ts length equals the size of objs.
         """
         self.objs = objs
-        self.mods = mods
+        self.mods = mods if mods is not None else [None] * len(keys)
         self.ths = ths if ths is not None else [0.99] * len(keys)
         self.keys = keys
 
-    def __call__(self, mols=None, is_smiles=False, is_modified=True):
+    def __call__(self, smiles, is_modified=True, frags=None):
         """
         Calculate the scores of all objectives for all of samples
         Args:
@@ -253,13 +264,10 @@ class Env:
                 and desirability for each SMILES.
         """
         preds = {}
-        fps = None
-        if is_smiles:
-            mols = [Chem.MolFromSmiles(s) for s in mols]
+        mols = [Chem.MolFromSmiles(s) for s in smiles]
         for i, key in enumerate(self.keys):
             if type(self.objs[i]) == Predictor:
-                if fps is None:
-                    fps = Predictor.calc_fp(mols)
+                fps = Predictor.calc_fp(mols)
                 score = self.objs[i](fps)
             else:
                 score = self.objs[i](mols)
@@ -269,9 +277,29 @@ class Env:
         preds = pd.DataFrame(preds)
         undesire = (preds < self.ths)  # ^ self.objs.on
         preds['DESIRE'] = (undesire.sum(axis=1) == 0).astype(int)
-        preds['VALID'] = [0 if mol is None else 1 for mol in mols]
+        preds['VALID'] = Env.check_smiles(smiles, frags=frags).all(axis=1).astype(int)
+
         preds[preds.VALID == 0] = 0
         return preds
+
+    @classmethod
+    def check_smiles(cls, smiles, frags=None):
+        shape = (len(smiles), 1) if frags is None else (len(smiles), 2)
+        valids = np.zeros(shape)
+        for j, smile in enumerate(smiles):
+            try:
+                mol = Chem.MolFromSmiles(smile)
+                valids[j, 0] = 0 if mol is None else 1
+            except:
+                valids[j, 0] = 0
+            if frags is not None:
+                try:
+                    subs = frags[j].split('.')
+                    subs = [Chem.MolFromSmiles(sub) for sub in subs]
+                    valids[j, 1] = np.all([mol.HasSubstructMatch(sub) for sub in subs])
+                except:
+                    valids[j, 1] = 0
+        return valids
 
     @classmethod
     def calc_fps(cls, mols, fp_type='ECFP6'):
@@ -283,7 +311,7 @@ class Env:
                 fps.append(None)
         return fps
 
-    def calc_reward(self, smiles, scheme='WS'):
+    def calc_reward(self, smiles, scheme='WS', frags=None):
         """
         Calculate the single value as the reward for each molecule used for reinforcement learning
         Args:
@@ -297,7 +325,8 @@ class Env:
                 n is the number of array which equals to the size of smiles.
         """
         mols = [Chem.MolFromSmiles(smile) for smile in smiles]
-        preds = self(mols)
+        preds = self(smiles, frags=frags)
+        valid = preds.VALID.values
         desire = preds.DESIRE.sum()
         undesire = len(preds) - desire
         preds = preds[self.keys].values
@@ -317,4 +346,5 @@ class Env:
                      ((preds >= self.ths).mean(axis=0, keepdims=True) + 0.01)
             weight = weight / weight.sum()
             rewards = preds.dot(weight.T)
+        rewards[valid == 0] = 0
         return rewards

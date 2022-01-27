@@ -1,184 +1,262 @@
-import numpy as np
 import torch
-from torch import nn
-from torch import optim
 import utils
+from torch import nn
+from .attention import DecoderAttn
+import time
+import pandas as pd
 
 
-class Generator(nn.Module):
-    def __init__(self, voc, embed_size=128, hidden_size=512, is_lstm=True, lr=1e-3):
-        super(Generator, self).__init__()
+class Base(nn.Module):
+    def fit(self, pair_loader, ind_loader, epochs=100, method=None, out=None):
+        log = open(out + '.log', 'w')
+        best = 0.
+        net = nn.DataParallel(self, device_ids=utils.devices)
+        for epoch in range(epochs):
+            t0 = time.time()
+            for i, (src, trg) in enumerate(pair_loader):
+                src, trg = src.to(utils.dev), trg.to(utils.dev)
+
+                self.optim.zero_grad()
+                loss = net(src, trg)
+                loss = -loss.mean()
+                print(epoch, i, loss)
+                loss.backward()
+                self.optim.step()
+
+                if i % 1000 != 0: continue
+                frags, smiles, scores = self.evaluate(ind_loader, method=method)
+                valid = scores.VALID.sum() / len(scores)
+                desire = scores.DESIRE.sum() / len(scores)
+                t1 = time.time()
+                log.write("Epoch: %d step: %d loss: %.3f valid: %.3f desire: %.3f time: %d\n" %
+                      (epoch, i, loss.item(), valid, desire, t1-t0))
+                print('%.3f' % (t1-t0))
+                del loss
+                t0 = t1
+                for i, smile in enumerate(smiles):
+                    log.write('%d\t%.3f\t%s\t%s\n' % (scores.VALID[i], scores.DESIRE[i], frags[i], smile))
+                if best <= desire:
+                    torch.save(self.state_dict(), out + '.pkg')
+                    best = desire
+                log.flush()
+        log.close()
+
+    def evaluate(self, loader, repeat=1, method=None):
+        net = nn.DataParallel(self, device_ids=utils.devices)
+        frags, smiles = [], []
+        with torch.no_grad():
+            for _ in range(repeat):
+                for ix, src in loader:
+                    trg = net(src.to(utils.dev))
+                    ix = loader.dataset.index[ix]
+                    smiles += [self.voc_trg.decode(s, is_tk=False) for s in trg]
+                    frags += ix.tolist()
+                    break
+        if method is None:
+            scores = utils.Env.check_smiles(smiles, frags=frags)
+            scores = pd.DataFrame(scores, columns=['VALID', 'DESIRE'])
+        else:
+            scores = method(smiles, frags=frags)
+        return frags, smiles, scores
+
+    def init_states(self):
+        for p in self.parameters():
+            if p.dim() > 1:
+                nn.init.xavier_uniform_(p)
+        self.to(utils.dev)
+
+
+class Seq2Seq(Base):
+    def __init__(self, voc_src, voc_trg, emb_sharing=True):
+        super(Seq2Seq, self).__init__()
+        self.voc_size = 128
+        self.hidden_size = 512
+        self.voc_src = voc_src
+        self.voc_trg = voc_trg
+        self.encoder = EncoderRNN(voc_src, self.voc_size, self.hidden_size)
+        self.decoder = DecoderAttn(voc_trg, self.voc_size, self.hidden_size)
+        if emb_sharing:
+            self.encoder.embed.weight = self.decoder.embed.weight
+        self.optim = torch.optim.Adam(self.parameters(), lr=1e-4)
+
+    def forward(self, input, output=None):
+        batch_size = input.size(0)
+        memory, hc = self.encoder(input)
+
+        output_ = torch.zeros(batch_size, self.voc_trg.max_len).to(utils.dev)
+        if output is None:
+            output_ = output_.long()
+        # Start token
+        x = torch.LongTensor([self.voc_trg.tk2ix['GO']] * batch_size).to(utils.dev)
+        isEnd = torch.zeros(batch_size).bool().to(utils.dev)
+
+        for step in range(self.voc_trg.max_len):
+            logit, hc = self.decoder(x, hc, memory)
+            if output is not None:
+                score = logit.log_softmax(dim=-1)
+                score = score.gather(1, output[:, step:step + 1]).squeeze()
+                output_[:, step] = score
+                x = output[:, step]
+            else:
+                proba = logit.softmax(dim=-1)
+                x = torch.multinomial(proba, 1).view(-1)
+                x[isEnd] = self.voc_trg.tk2ix['_']
+                output_[:, step] = x
+                isEnd |= x == self.voc_trg.tk2ix['EOS']
+                if isEnd.all(): break
+        return output_
+
+
+class EncDec(Base):
+    def __init__(self, voc_src, voc_trg, emb_sharing=True):
+        super(EncDec, self).__init__()
+        self.voc_size = 128
+        self.hidden_size = 512
+        self.voc_src = voc_src
+        self.voc_trg = voc_trg
+        self.encoder = EncoderRNN(voc_src, self.voc_size, self.hidden_size)
+        self.decoder = DecoderRNN(voc_trg, self.voc_size, self.hidden_size)
+        if emb_sharing:
+            self.encoder.embed.weight = self.decoder.embed.weight
+        self.optim = torch.optim.Adam(self.parameters(), lr=1e-4)
+
+    def forward(self, input, output=None):
+        batch_size = input.size(0)
+        _, hc = self.encoder(input)
+
+        output_ = torch.zeros(batch_size, self.voc_trg.max_len).to(utils.dev)
+        if output is None:
+            output_ = output_.long()
+
+        x = torch.LongTensor([self.voc_trg.tk2ix['GO']] * batch_size).to(utils.dev)
+        isEnd = torch.zeros(batch_size).bool().to(utils.dev)
+        for step in range(self.voc_trg.max_len):
+            logit, hc = self.decoder(x, hc)
+            if output is not None:
+                score = logit.log_softmax(dim=-1)
+                score = score.gather(1, output[:, step:step + 1]).squeeze()
+                output_[:, step] = score
+                x = output[:, step]
+            else:
+                proba = logit.softmax(dim=-1)
+                x = torch.multinomial(proba, 1).view(-1)
+                x[isEnd] = self.voc_trg.tk2ix['_']
+                output_[:, step] = x
+                isEnd |= x == self.voc_trg.tk2ix['EOS']
+                if isEnd.all(): break
+        return output_
+
+
+class EncoderRNN(nn.Module):
+    def __init__(self, voc, d_emb=128, d_hid=512, is_lstm=True, n_layers=3):
+        super(EncoderRNN, self).__init__()
+        self.voc = voc
+        self.hidden_size = d_hid
+        self.embed_size = d_emb
+        self.n_layers = n_layers
+        self.embed = nn.Embedding(voc.size, d_emb)
+        rnn_layer = nn.LSTM if is_lstm else nn.GRU
+        self.rnn = rnn_layer(d_emb, d_hid, batch_first=True, num_layers=n_layers)
+
+    def forward(self, input):
+        if not hasattr(self, '_flattened'):
+            self.rnn.flatten_parameters()
+            setattr(self, '_flattened', True)
+
+        output = self.embed(input)
+        output, (h_out, c_out) = self.rnn(output, None)
+        return output, (h_out, c_out)
+
+
+class DecoderRNN(nn.Module):
+    def __init__(self, voc, embed_size, hidden_size, n_layers=3, is_lstm=True):
+        super(DecoderRNN, self).__init__()
         self.voc = voc
         self.embed_size = embed_size
         self.hidden_size = hidden_size
         self.output_size = voc.size
+        self.n_layers = n_layers
+        self.is_lstm = is_lstm
+
+        rnn_layer = nn.LSTM if is_lstm else nn.GRU
+        self.embed = nn.Embedding(voc.size, embed_size)
+        self.rnn = rnn_layer(embed_size, hidden_size, n_layers, batch_first=True)
+        self.linear = nn.Linear(hidden_size, voc.size)
+
+    def forward(self, input, hc):
+        if not hasattr(self, '_flattened'):
+            self.rnn.flatten_parameters()
+            setattr(self, '_flattened', True)
+        output = self.embed(input.unsqueeze(-1))
+        output, hc = self.rnn(output, hc)
+        output = self.linear(output).squeeze(1)
+        return output, hc
+
+
+class ValueNet(nn.Module):
+    def __init__(self, voc, embed_size=128, hidden_size=512, max_value=1, min_value=0, n_objs=1, is_lstm=True):
+        super(ValueNet, self).__init__()
+        self.voc = voc
+        self.embed_size = embed_size
+        self.hidden_size = hidden_size
+        self.output_size = voc.size
+        self.max_value = max_value
+        self.min_value = min_value
+        self.n_objs = n_objs
 
         self.embed = nn.Embedding(voc.size, embed_size)
         self.is_lstm = is_lstm
         rnn_layer = nn.LSTM if is_lstm else nn.GRU
         self.rnn = rnn_layer(embed_size, hidden_size, num_layers=3, batch_first=True)
-        self.linear = nn.Linear(hidden_size, voc.size)
-        self.optim = optim.Adam(self.parameters(), lr=lr)
+        self.linear = nn.Linear(hidden_size, voc.size * n_objs)
+        self.optim = torch.optim.Adam(self.parameters())
         self.to(utils.dev)
 
     def forward(self, input, h):
         output = self.embed(input.unsqueeze(-1))
         output, h_out = self.rnn(output, h)
-        output = self.linear(output).squeeze(1)
+        output = self.linear(output).view(len(input), self.n_objs, self.voc.size)
+        # output: n_batch * n_obj * voc.size
         return output, h_out
 
-    def init_h(self, batch_size, labels=None):
-        h = torch.rand(3, batch_size, 512).to(utils.dev)
-        if labels is not None:
-            h[0, batch_size, 0] = labels
+    def init_h(self, batch_size):
         if self.is_lstm:
-            c = torch.rand(3, batch_size, self.hidden_size).to(utils.dev)
-        return (h, c) if self.is_lstm else h
+            return (torch.zeros(3, batch_size, self.hidden_size).to(utils.dev),
+                    torch.zeros(3, batch_size, self.hidden_size).to(utils.dev))
+        else:
+            return torch.zeros(3, batch_size, 512).to(utils.dev)
 
-    def likelihood(self, target):
-        batch_size, seq_len = target.size()
+    def sample(self, batch_size, is_pareto=False):
         x = torch.LongTensor([self.voc.tk2ix['GO']] * batch_size).to(utils.dev)
         h = self.init_h(batch_size)
-        scores = torch.zeros(batch_size, seq_len).to(utils.dev)
-        for step in range(seq_len):
-            logits, h = self(x, h)
-            logits = logits.log_softmax(dim=-1)
-            score = logits.gather(1, target[:, step:step+1]).squeeze()
-            scores[:, step] = score
-            x = target[:, step]
-        return scores
 
-    def PGLoss(self, loader):
-        for seq, reward in loader:
-            self.zero_grad()
-            score = self.likelihood(seq)
-            loss = score * reward
-            loss = -loss.mean()
-            loss.backward()
-            self.optim.step()
-
-    def sample(self, batch_size):
-        x = torch.LongTensor([self.voc.tk2ix['GO']] * batch_size).to(utils.dev)
-        h = self.init_h(batch_size)
-        sequences = torch.zeros(batch_size, self.voc.max_len).long().to(utils.dev)
         isEnd = torch.zeros(batch_size).bool().to(utils.dev)
-
-        for step in range(self.voc.max_len):
-            logit, h = self(x, h)
-            proba = logit.softmax(dim=-1)
-            x = torch.multinomial(proba, 1).view(-1)
-            x[isEnd] = self.voc.tk2ix['EOS']
-            sequences[:, step] = x
-
-            end_token = (x == self.voc.tk2ix['EOS'])
-            isEnd = torch.ge(isEnd + end_token, 1)
-            if (isEnd == 1).all(): break
-        return sequences
-
-    def evolve(self, batch_size, epsilon=0.01, crover=None, mutate=None):
-        # Start tokens
-        x = torch.LongTensor([self.voc.tk2ix['GO']] * batch_size).to(utils.dev)
-        # Hidden states initialization for exploitation network
-        h = self.init_h(batch_size)
-        # Hidden states initialization for exploration network
-        h1 = self.init_h(batch_size)
-        h2 = self.init_h(batch_size)
-        # Initialization of output matrix
-        sequences = torch.zeros(batch_size, self.voc.max_len).long().to(utils.dev)
-        # labels to judge and record which sample is ended
-        is_end = torch.zeros(batch_size).bool().to(utils.dev)
-
-        for step in range(self.voc.max_len):
-            logit, h = self(x, h)
-            proba = logit.softmax(dim=-1)
-            if crover is not None:
-                ratio = torch.rand(batch_size, 1).to(utils.dev)
-                logit1, h1 = crover(x, h1)
-                proba = proba * ratio + logit1.softmax(dim=-1) * (1 - ratio)
-            if mutate is not None:
-                logit2, h2 = mutate(x, h2)
-                is_mutate = (torch.rand(batch_size) < epsilon).to(utils.dev)
-                proba[is_mutate, :] = logit2.softmax(dim=-1)[is_mutate, :]
-            # sampling based on output probability distribution
-            x = torch.multinomial(proba, 1).view(-1)
-
-            is_end |= x == self.voc.tk2ix['EOS']
-            x[is_end] = self.voc.tk2ix['EOS']
-            sequences[:, step] = x
-            if is_end.all(): break
-        return sequences
-
-    def evolve1(self, batch_size, epsilon=0.01, crover=None, mutate=None):
-        # Start tokens
-        x = torch.LongTensor([self.voc.tk2ix['GO']] * batch_size).to(utils.dev)
-        # Hidden states initialization for exploitation network
-        h = self.init_h(batch_size)
-        # Hidden states initialization for exploration network
-        h2 = self.init_h(batch_size)
-        # Initialization of output matrix
-        sequences = torch.zeros(batch_size, self.voc.max_len).long().to(utils.dev)
-        # labels to judge and record which sample is ended
-        is_end = torch.zeros(batch_size).bool().to(utils.dev)
-
-        for step in range(self.voc.max_len):
-            is_change = torch.rand(1) < 0.5
-            if crover is not None and is_change:
-                logit, h = crover(x, h)
-            else:
+        outputs = []
+        for job in range(self.n_objs):
+            seqs = torch.zeros(batch_size, self.voc.max_len).long().to(utils.dev)
+            for step in range(self.voc.max_len):
                 logit, h = self(x, h)
-            proba = logit.softmax(dim=-1)
-            if mutate is not None:
-                logit2, h2 = mutate(x, h2)
-                ratio = torch.rand(batch_size, 1).to(utils.dev) * epsilon
-                proba = logit.softmax(dim=-1) * (1 - ratio) + logit2.softmax(dim=-1) * ratio
-            # sampling based on output probability distribution
-            x = torch.multinomial(proba, 1).view(-1)
+                logit = logit.view(batch_size, self.voc.size, self.n_objs)
+                if is_pareto:
+                    proba = torch.zeros(batch_size, self.voc.size).to(utils.dev)
+                    for i in range(batch_size):
+                        preds = logit[i, :, :]
+                        fronts, ranks = utils.nsgaii_sort(preds)
+                        for front in fronts:
+                            low, high = preds[front, :].mean(axis=1).min(), preds[front, :].mean(axis=1).max()
+                            low = (low - self.min_value) / (self.max_value - self.min_value)
+                            high = (high - self.min_value) / (self.max_value - self.min_value)
+                            for j, ix in enumerate(front):
+                                scale = len(front) - 1 if len(front) > 1 else 1
+                                proba[i, ix] = (high - low) * j / scale + low
+                else:
+                    proba = logit[:, :, job].softmax(dim=-1)
+                x = torch.multinomial(proba, 1).view(-1)
+                x[isEnd] = self.voc.tk2ix['EOS']
+                seqs[:, step] = x
 
-            x[is_end] = self.voc.tk2ix['EOS']
-            sequences[:, step] = x
-
-            # Judging whether samples are end or not.
-            end_token = (x == self.voc.tk2ix['EOS'])
-            is_end = torch.ge(is_end + end_token, 1)
-            #  If all of the samples generation being end, stop the sampling process
-            if (is_end == 1).all(): break
-        return sequences
-
-    def fit(self, loader_train, out, loader_valid=None, epochs=100, lr=1e-3):
-        optimizer = optim.Adam(self.parameters(), lr=lr)
-        log = open(out + '.log', 'w')
-        best_error = np.inf
-        for epoch in range(epochs):
-            for i, batch in enumerate(loader_train):
-                optimizer.zero_grad()
-                loss_train = self.likelihood(batch.to(utils.dev))
-                loss_train = -loss_train.mean()
-                loss_train.backward()
-                optimizer.step()
-                if i % 10 == 0 or loader_valid is not None:
-                    seqs = self.sample(len(batch * 2))
-                    ix = utils.unique(seqs)
-                    seqs = seqs[ix]
-                    smiles, valids = self.voc.check_smiles(seqs)
-                    error = 1 - sum(valids) / len(seqs)
-                    info = "Epoch: %d step: %d error_rate: %.3f loss_train: %.3f" % (epoch, i, error, loss_train.item())
-                    if loader_valid is not None:
-                        loss_valid, size = 0, 0
-                        for j, batch in enumerate(loader_valid):
-                            size += batch.size(0)
-                            loss_valid += -self.likelihood(batch.to(utils.dev)).sum().item()
-                        loss_valid = loss_valid / size / self.voc.max_len
-                        if loss_valid < best_error:
-                            torch.save(self.state_dict(), out + '.pkg')
-                            best_error = loss_valid
-                        info += ' loss_valid: %.3f' % loss_valid
-                    elif error < best_error:
-                        torch.save(self.state_dict(), out + '.pkg')
-                        best_error = error
-                    print(info, file=log)
-                    for i, smile in enumerate(smiles):
-                        print('%d\t%s' % (valids[i], smile), file=log)
-        log.close()
-
-
-
+                end_token = (x == self.voc.tk2ix['EOS'])
+                isEnd = torch.ge(isEnd + end_token, 1)
+                if (isEnd == 1).all(): break
+            outputs.append(seqs)
+        return torch.cat(outputs, dim=0)

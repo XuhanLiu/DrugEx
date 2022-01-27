@@ -15,7 +15,6 @@ class Base(nn.Module):
     def fit(self, train_loader, valid_loader, out, epochs=100, lr=1e-4):
         """Training the DNN model, similar to the scikit-learn or Keras style.
         In the end, the optimal value of parameters will also be persisted on the hard drive.
-
         Arguments:
             train_loader (DataLoader): Data loader for training set,
                 including m X n target FloatTensor and m X l label FloatTensor
@@ -78,12 +77,10 @@ class Base(nn.Module):
 
     def evaluate(self, loader):
         """Evaluating the performance of the DNN model.
-
         Arguments:
             loader (torch.util.data.DataLoader): data loader for test set,
                 including m X n target FloatTensor and l X n label FloatTensor
                 (m is the No. of sample, n is the No. of features, l is the No. of classes or tasks)
-
         Return:
             loss (float): the average loss value based on the calculation of loss function with given test set.
         """
@@ -102,12 +99,10 @@ class Base(nn.Module):
 
     def predict(self, loader):
         """Predicting the probability of each sample in the given dataset.
-
         Arguments:
             loader (torch.util.data.DataLoader): data loader for test set,
                 only including m X n target FloatTensor
                 (m is the No. of sample, n is the No. of features)
-
         Return:
             score (ndarray): probability of each sample in the given dataset,
                 it is a m X l FloatTensor (m is the No. of sample, l is the No. of classes or tasks.)
@@ -124,7 +119,6 @@ class Base(nn.Module):
 class STFullyConnected(Base):
     """Single task DNN classification/regression model. It contains four fully connected layers between which
         are dropout layer for robustness.
-
     Arguments:
         n_dim (int): the No. of columns (features) for input tensor
         n_class (int): the No. of columns (classes) for output tensor.
@@ -154,11 +148,9 @@ class STFullyConnected(Base):
 
     def forward(self, X, istrain=False):
         """Invoke the class directly as a function
-
         Arguments:
             X (FloatTensor): m X n FloatTensor, m is the No. of samples, n is the No. of features.
             istrain (bool, optional): is it invoked during training process (True) or just for prediction (False)
-
         Return:
             y (FloatTensor): m X l FloatTensor, m is the No. of samples, n is the No. of classes
         """
@@ -181,7 +173,6 @@ class STFullyConnected(Base):
 class MTFullyConnected(Base):
     """Multi-task DNN classification/regression model. It contains four fully connected layers
     between which are dropout layer for robustness.
-
     Arguments:
         n_dim (int): the No. of columns (features) for input tensor
         n_task (int): the No. of columns (tasks) for output tensor.
@@ -208,12 +199,10 @@ class MTFullyConnected(Base):
 
     def forward(self, X, istrain=False):
         """Invoke the class directly as a function
-
         Arguments:
             X (FloatTensor): m X n FloatTensor, m is the No. of samples, n is the No. of features.
             istrain (bool, optional): is it invoked during training process (True)
                 or just for prediction (False)
-
         Return:
             y (FloatTensor): m X l FloatTensor, m is the No. of samples, n is the No. of tasks
         """

@@ -21,30 +21,21 @@ from rdkit import Chem
 
 def SVM(X, y, X_ind, y_ind, reg=False):
     """ Cross validation and Independent test for SVM classifion/regression model.
-
         Arguments:
             X (np.ndarray): m x n feature matrix for cross validation, where m is the number of samples
                 and n is the number of features.
-
             y (np.ndarray): m-d label array for cross validation, where m is the number of samples and
                 equals to row of X.
-
             X_ind (np.ndarray): m x n Feature matrix for independent set, where m is the number of samples
                 and n is the number of features.
-
             y_ind (np.ndarray): m-d label array for independent set, where m is the number of samples and
                 equals to row of X_ind, and l is the number of types.
-
             reg (bool): it True, the training is for regression, otherwise for classification.
-
-
          Returns:
             cvs (np.ndarray): m x l result matrix for cross validation, where m is the number of samples and
                 equals to row of X, and l is the number of types and equals to row of X.
-
             inds (np.ndarray): m x l result matrix for independent test, where m is the number of samples and
                 equals to row of X, and l is the number of types and equals to row of X.
-
     """
     if reg:
         folds = KFold(5).split(X)
@@ -76,30 +67,21 @@ def SVM(X, y, X_ind, y_ind, reg=False):
 
 def RF(X, y, X_ind, y_ind, reg=False):
     """ Cross validation and Independent test for RF classifion/regression model.
-
         Arguments:
             X (np.ndarray): m x n feature matrix for cross validation, where m is the number of samples
                 and n is the number of features.
-
             y (np.ndarray): m-d label array for cross validation, where m is the number of samples and
                 equals to row of X.
-
             X_ind (np.ndarray): m x n Feature matrix for independent set, where m is the number of samples
                 and n is the number of features.
-
             y_ind (np.ndarray): m-d label array for independent set, where m is the number of samples and
                 equals to row of X_ind, and l is the number of types.
-
             reg (bool): it True, the training is for regression, otherwise for classification.
-
-
          Returns:
             cvs (np.ndarray): m x l result matrix for cross validation, where m is the number of samples and
                 equals to row of X, and l is the number of types and equals to row of X.
-
             inds (np.ndarray): m x l result matrix for independent test, where m is the number of samples and
                 equals to row of X, and l is the number of types and equals to row of X.
-
     """
     if reg:
         folds = KFold(5).split(X)
@@ -123,30 +105,21 @@ def RF(X, y, X_ind, y_ind, reg=False):
 
 def KNN(X, y, X_ind, y_ind, reg=False):
     """ Cross validation and Independent test for KNN classifion/regression model.
-
         Arguments:
             X (np.ndarray): m x n feature matrix for cross validation, where m is the number of samples
                 and n is the number of features.
-
             y (np.ndarray): m-d label array for cross validation, where m is the number of samples and
                 equals to row of X.
-
             X_ind (np.ndarray): m x n Feature matrix for independent set, where m is the number of samples
                 and n is the number of features.
-
             y_ind (np.ndarray): m-d label array for independent set, where m is the number of samples and
                 equals to row of X_ind, and l is the number of types.
-
             reg (bool): it True, the training is for regression, otherwise for classification.
-
-
          Returns:
             cvs (np.ndarray): m x l result matrix for cross validation, where m is the number of samples and
                 equals to row of X, and l is the number of types and equals to row of X.
-
             inds (np.ndarray): m x l result matrix for independent test, where m is the number of samples and
                 equals to row of X, and l is the number of types and equals to row of X.
-
     """
     if reg:
         folds = KFold(5).split(X)
@@ -170,27 +143,20 @@ def KNN(X, y, X_ind, y_ind, reg=False):
 
 def NB(X, y, X_ind, y_ind):
     """ Cross validation and Independent test for Naive Bayes classifion model.
-
         Arguments:
             X (np.ndarray): m x n feature matrix for cross validation, where m is the number of samples
                 and n is the number of features.
-
             y (np.ndarray): m-d label array for cross validation, where m is the number of samples and
                 equals to row of X.
-
             X_ind (np.ndarray): m x n Feature matrix for independent set, where m is the number of samples
                 and n is the number of features.
-
             y_ind (np.ndarray): m-d label array for independent set, where m is the number of samples and
                 equals to row of X_ind, and l is the number of types.
-
          Returns:
             cvs (np.ndarray): m x l result matrix for cross validation, where m is the number of samples and
                 equals to row of X, and l is the number of types and equals to row of X.
-
             inds (np.ndarray): m x l result matrix for independent test, where m is the number of samples and
                 equals to row of X, and l is the number of types and equals to row of X.
-
     """
     folds = KFold(5).split(X)
     cvs = np.zeros(y.shape)
@@ -205,30 +171,21 @@ def NB(X, y, X_ind, y_ind):
 
 def PLS(X, y, X_ind, y_ind):
     """ Cross validation and Independent test for PLS regression model.
-
         Arguments:
             X (np.ndarray): m x n feature matrix for cross validation, where m is the number of samples
                 and n is the number of features.
-
             y (np.ndarray): m-d label array for cross validation, where m is the number of samples and
                 equals to row of X.
-
             X_ind (np.ndarray): m x n Feature matrix for independent set, where m is the number of samples
                 and n is the number of features.
-
             y_ind (np.ndarray): m-d label array for independent set, where m is the number of samples and
                 equals to row of X_ind, and l is the number of types.
-
             reg (bool): it True, the training is for regression, otherwise for classification.
-
-
          Returns:
             cvs (np.ndarray): m x l result matrix for cross validation, where m is the number of samples and
                 equals to row of X, and l is the number of types and equals to row of X.
-
             inds (np.ndarray): m x l result matrix for independent test, where m is the number of samples and
                 equals to row of X, and l is the number of types and equals to row of X.
-
     """
     folds = KFold(5).split(X)
     cvs = np.zeros(y.shape)
@@ -243,30 +200,21 @@ def PLS(X, y, X_ind, y_ind):
 
 def DNN(X, y, X_ind, y_ind, out, reg=False):
     """ Cross validation and Independent test for DNN classifion/regression model.
-
         Arguments:
             X (np.ndarray): m x n feature matrix for cross validation, where m is the number of samples
                 and n is the number of features.
-
             y (np.ndarray): m x l label matrix for cross validation, where m is the number of samples and
                 equals to row of X, and l is the number of types.
-
             X_ind (np.ndarray): m x n Feature matrix for independent set, where m is the number of samples
                 and n is the number of features.
-
             y_ind (np.ndarray): m-d label arrays for independent set, where m is the number of samples and
                 equals to row of X_ind, and l is the number of types.
-
             reg (bool): it True, the training is for regression, otherwise for classification.
-
-
          Returns:
             cvs (np.ndarray): m x l result matrix for cross validation, where m is the number of samples and
                 equals to row of X, and l is the number of types and equals to row of X.
-
             inds (np.ndarray): m x l result matrix for independent test, where m is the number of samples and
                 equals to row of X, and l is the number of types and equals to row of X.
-
     """
     if y.shape[1] > 1 or reg:
         folds = KFold(5).split(X)

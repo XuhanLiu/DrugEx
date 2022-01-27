@@ -1,10 +1,12 @@
+from .nsgaii import *
+from .metric import *
 from .objective import *
 from .modifier import *
 from .vocab import *
-from .nsgaii import *
-from .metric import *
+from .optim import *
 
 torch.set_num_threads(1)
-rdBase.DisableLog('rdApp.error')
+rdBase.DisableLog('rdApp.info')
 dev = torch.device('cuda')
 devices = [0]
+
