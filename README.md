@@ -1,7 +1,7 @@
 DrugEx RELEASE NOTES
 ====================
 
-DrugEx (Drug Explorer): An explaration strategy improves the diversity of de novo drug design using deep reinforcement learning
+Drug Explorer(DrugEx v1): An explaration strategy improves the diversity of de novo drug design using deep reinforcement learning
 
 By Xuhan Liu & Gerard J.P. van Westen, on November 1st 2018
 
