@@ -1,7 +1,7 @@
-DrugEx RELEASE NOTES
+DrugEx RELEASE NOTES (v2)
 ====================
 
-DrugEx v2 (Drug Explorer): De Novo Design of Drug Molecule by Pareto-based Multi-Objective Reinforcement Learning in Polypharmacology
+Drug Explorer (DrugEx v2): De Novo Design of Drug Molecule by Pareto-based Multi-Objective Reinforcement Learning in Polypharmacology
 
 By Xuhan Liu & Gerard J.P. van Westen, on March 8th 2021
 
