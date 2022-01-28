@@ -7,9 +7,9 @@ By Xuhan Liu & Gerard J.P. van Westen, on March 8th 2021
 
 Please see the LICENSE file for the license terms for the software. Basically it's free to academic users. If you do wish to sell the software or use it in a commercial product, then please contact us:
 
-   [Xuhan Liu](mailto:x.liu@lacdr.leidenuniv.nl) (First Author): 
+   [Xuhan Liu](mailto:xuhanliu@hotmail.nl) (First Author): xuhanliu@hotmail.com
 
-   [Gerard J.P. van Westen](mailto:gerard@lacdr.leidenuniv.nl) (Correspondent Author):
+   [Gerard J.P. van Westen](mailto:gerard@lacdr.leidenuniv.nl) (Correspondent Author): gerard@lacdr.leidenuniv.nl
    
 "A small step for exploring the drug space in need, A giant leap for exploiting a healthy state indeed"
 
