@@ -23,7 +23,7 @@ def corpus(input, output, suffix='sdf'):
     else:
         df = pd.read_table(input).Smiles.dropna()
         mols = [Chem.MolFromSmiles(s) for s in df]
-    voc = Voc('data/chembl_voc.txt')
+    voc = Voc('data/voc_smiles.txt')
     charger = rdMolStandardize.Uncharger()
     chooser = rdMolStandardize.LargestFragmentChooser()
     disconnector = rdMolStandardize.MetalDisconnector()
