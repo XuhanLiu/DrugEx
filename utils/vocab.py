@@ -229,7 +229,25 @@ class VocSeq:
                 output[i, j] = self.tk2ix[res]
         return output
 
+    
+class VocTgt:
+    def __init__(self, max_len=1000):
+        self.chars = ['_'] + [r for r in utils.AA]
+        self.size = len(self.chars)
+        self.max_len = max_len
+        self.tk2ix = dict(zip(self.chars, range(len(self.chars))))
 
+    def encode(self, seqs):
+        """Takes a list of characters (eg '[NH]') and encodes to array of indices"""
+        output = torch.zeros(len(seqs), self.max_len).long()
+        for i, seq in enumerate(seqs):
+            for j, res in enumerate(seq):
+                if res not in self.chars:
+                    res = '_'
+                output[i, j] = self.tk2ix[res]
+        return output
+
+    
 class VocSmiles:
     """A class for handling encoding/decoding from SMILES to an array of indices"""
 
