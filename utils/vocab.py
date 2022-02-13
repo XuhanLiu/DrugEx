@@ -230,24 +230,6 @@ class VocSeq:
         return output
 
     
-class VocTgt:
-    def __init__(self, max_len=1000):
-        self.chars = ['_'] + [r for r in utils.AA]
-        self.size = len(self.chars)
-        self.max_len = max_len
-        self.tk2ix = dict(zip(self.chars, range(len(self.chars))))
-
-    def encode(self, seqs):
-        """Takes a list of characters (eg '[NH]') and encodes to array of indices"""
-        output = torch.zeros(len(seqs), self.max_len).long()
-        for i, seq in enumerate(seqs):
-            for j, res in enumerate(seq):
-                if res not in self.chars:
-                    res = '_'
-                output[i, j] = self.tk2ix[res]
-        return output
-
-    
 class VocSmiles:
     """A class for handling encoding/decoding from SMILES to an array of indices"""
 
@@ -317,3 +299,25 @@ class VocSmiles:
             fps[i, :] = self.encode(token)
         return fps
 
+    
+class TgtData(Dataset):
+    def __init__(self, seqs, ix, max_len=100):
+        self.max_len = max_len
+        self.index = np.array(ix)
+        self.map = {idx: i for i, idx in enumerate(self.index)}
+        self.seq = seqs
+
+    def __getitem__(self, i):
+        seq = self.seq[i]
+        return i, seq
+
+    def __len__(self):
+        return len(self.seq)
+
+    def collate_fn(self, arr):
+        collated_ix = np.zeros(len(arr), dtype=int)
+        collated_seq = torch.zeros(len(arr), self.max_len).long()
+        for i, (ix, tgt) in enumerate(arr):
+            collated_ix[i] = ix
+            collated_seq[i, :] = tgt
+        return collated_ix, collated_seq
