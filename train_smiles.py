@@ -33,7 +33,7 @@ def rl_train():
     alg = OPT['-a'] if '-a' in OPT else 'smile'
     os.environ["CUDA_VISIBLE_DEVICES"] = OPT['-g'] if '-g' in OPT else "0,1,2,3"
 
-    voc = utils.VocSmiles(init_from_file="data/chembl_voc.txt", max_len=100)
+    voc = utils.VocSmiles(init_from_file="data/voc_smiles.txt", max_len=100)
     agent = GPT2Model(voc, n_layer=12)
     agent.load_state_dict(torch.load(params['pr_path'] + '.pkg', map_location=utils.dev))
 
