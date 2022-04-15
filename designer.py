@@ -27,9 +27,9 @@ if __name__ == "__main__":
     utils.devices = [0]
 
     if method in ['gpt']:
-        voc = utils.Voc('data/chembl_voc.txt', src_len=100, trg_len=100)
+        voc = utils.Voc('data/voc_smiles.txt', src_len=100, trg_len=100)
     else:
-        voc = utils.VocSmiles('data/chembl_voc.txt', max_len=100)
+        voc = utils.VocSmiles('data/voc_smiles.txt', max_len=100)
     if method == 'ved':
         agent = generator.EncDec(voc, voc).to(utils.dev)
     elif method == 'attn':
@@ -37,7 +37,7 @@ if __name__ == "__main__":
     elif method == 'gpt':
         agent = GPT2Model(voc, n_layer=12).to(utils.dev)
     else:
-        voc = utils.VocGraph('data/voc_atom.txt')
+        voc = utils.VocGraph('data/voc_graph.txt')
         agent = GraphModel(voc_trg=voc)
 
     for agent_path in ['benchmark/graph_PR_REG_OBJ1_0e+00.pkg', 'benchmark/graph_PR_REG_OBJ1_1e-01.pkg',
