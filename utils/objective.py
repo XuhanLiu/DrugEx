@@ -71,6 +71,35 @@ class Predictor:
             props.prop = prop
             fps[:, i] = props(mols)
         return fps
+    
+    
+class Docking:
+    def __init__(self, config_path, exe='vina-gpu', n_thread=3):
+        assert exe in ['vina', 'vina-gpu']
+        self.exe = exe
+        self.config_path = config_path
+        self.pool = Pool(n_thread=n_thread)
+
+    def score(self, mol):
+        fname = 'output/docking/' + ''.join(random.choice(string.ascii_letters + string.digits) for i in range(9))
+        try:
+            mol = Chem.AddHs(mol)
+            AllChem.EmbedMolecule(mol)
+            AllChem.MMFFOptimizeMolecule(mol)
+            preparator = MoleculePreparation()
+            preparator.prepare(mol)
+
+            preparator.write_pdbqt_file(fname + '.pdbqt')
+            sh = '%s --config %s --ligand %s.pdbqt --out %s.dok > %s.log' % \
+                 (self.exe, self.config_path, fname, fname, fname)
+            os.system(sh)
+            context = open(fname + '.dok').read()
+            score = re.search(r'REMARK VINA RESULT:.+\n', context).group().split()[3]
+            os.remove(fname + '.pdbqt')
+            os.remove(fname + '.dok')
+        except:
+            score = 0
+        return -float(score)
 
 
 class Similarity:
