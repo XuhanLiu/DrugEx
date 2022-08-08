@@ -9,13 +9,16 @@ from rdkit.Chem import Lipinski
 from rdkit import DataStructs
 from rdkit.Chem.QED import qed
 from rdkit.Chem.GraphDescriptors import BertzCT
-from utils import sascorer
+from .threadpool import Pool
 from .nsgaii import similarity_sort, nsgaii_sort
 from .fingerprints import get_fingerprint
-from . import modifier
+from . import modifier, sascorer
 import joblib
 import re
 from tqdm import tqdm
+from meeko import MoleculePreparation
+import os
+import random, string
 
 rdBase.DisableLog('rdApp.error')
 
