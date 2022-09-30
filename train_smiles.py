@@ -31,7 +31,7 @@ def rl_train():
     case = OPT['-c'] if '-c' in OPT else 'OBJ1'
     z = OPT['-z'] if '-z' in OPT else 'REG'
     alg = OPT['-a'] if '-a' in OPT else 'smile'
-    os.environ["CUDA_VISIBLE_DEVICES"] = OPT['-g'] if '-g' in OPT else "0,1,2,3"
+    #os.environ["CUDA_VISIBLE_DEVICES"] = OPT['-g'] if '-g' in OPT else "3,4,5,6"
 
     voc = utils.VocSmiles(init_from_file="data/voc_smiles.txt", max_len=100)
     agent = GPT2Model(voc, n_layer=12)
@@ -82,19 +82,16 @@ if __name__ == "__main__":
     opts, args = getopt.getopt(sys.argv[1:], "m:g:b:d:")
     OPT = dict(opts)
     torch.cuda.set_device(0)
-    os.environ["CUDA_VISIBLE_DEVICES"] = OPT.get('-g', "0,1,2,3")
+    #os.environ["CUDA_VISIBLE_DEVICES"] = OPT.get('-g', "4,5")
     method = OPT.get('-m', 'gpt')
-    step = OPT['-s']
-    BATCH_SIZE = int(OPT.get('-b', '256'))
-    dataset = OPT.get('-d', 'ligand_mf_brics')
+    # step = OPT['-s']
+    BATCH_SIZE = int(OPT.get('-b', '64'))
+    dataset = OPT.get('-d', 'chembl_mf_brics')
 
     data = pd.read_table('data/%s_train_smi.txt' % dataset)
     test = pd.read_table('data/%s_test_smi.txt' % dataset)
-    test = test.Input.drop_duplicates().sample(BATCH_SIZE * 10).values
-    if method in ['gpt']:
-        voc = utils.Voc('data/voc_smiles.txt', src_len=100, trg_len=100)
-    else:
-        voc = utils.VocSmiles('data/voc_smiles.txt', max_len=100)
+    test = test.Input.drop_duplicates().sample(BATCH_SIZE).values
+    voc = utils.VocSmiles('data/voc_smiles.txt', max_len=100) # had to change this to VocSmiles because the Voc class does not have max_len, maybe that is the problem?
     data_in = voc.encode([seq.split(' ') for seq in data.Input.values])
     data_out = voc.encode([seq.split(' ') for seq in data.Output.values])
     data_set = TensorDataset(data_in, data_out)
@@ -105,4 +102,4 @@ if __name__ == "__main__":
     test_loader = DataLoader(test_set, batch_size=BATCH_SIZE, collate_fn=test_set.collate_fn)
 
     pretrain(method=method)
-    rl_train()
+    # rl_train()

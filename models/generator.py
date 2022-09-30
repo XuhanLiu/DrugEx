@@ -1,3 +1,4 @@
+import os
 import torch
 import utils
 from torch import nn
@@ -8,6 +9,7 @@ import pandas as pd
 
 class Base(nn.Module):
     def fit(self, pair_loader, ind_loader, epochs=100, method=None, out=None):
+        os.makedirs(os.path.dirname(out), exist_ok=True) # create output directory if it does not exist yet
         log = open(out + '.log', 'w')
         best = 0.
         net = nn.DataParallel(self, device_ids=utils.devices)

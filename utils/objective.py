@@ -321,7 +321,7 @@ class Env:
         for j, smile in enumerate(smiles):
             try:
                 mol = Chem.MolFromSmiles(smile)
-                valids[j, 0] = 0 if mol is None else 1
+                valids[j, 0] = 0 if mol is None or not smile else 1 # empty smiles should also be invalid even if empty molecule is valid in rdkit
             except:
                 valids[j, 0] = 0
             if frags is not None:

@@ -4,6 +4,8 @@ from rdkit import Chem
 from rdkit.Chem.MolStandardize import rdMolStandardize
 import numpy as np
 import pandas as pd
+from torch.utils.data import Dataset
+
 import utils
 
 

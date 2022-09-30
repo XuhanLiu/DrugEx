@@ -147,7 +147,7 @@ def pair_frags(fname, out, method='Recap', is_mf=True):
         subs = np.array([m for m in subs if m.GetNumAtoms() > 1])
         match = np.array([[m.HasSubstructMatch(f) for f in subs] for m in subs])
         frags = subs[match.sum(axis=0) == 1]
-        frags = sorted(frags, key=lambda x:-x.GetNumAtoms())[:voc.n_frags]
+        frags = sorted(frags, key=lambda x:-x.GetNumAtoms())[:4]
         frags = [Chem.MolToSmiles(Chem.RemoveHs(f)) for f in frags]
 
         max_comb = len(frags) if is_mf else 1
@@ -249,17 +249,17 @@ if __name__ == '__main__':
     is_mf = bool(OPT.get('-f', 1))
     BATCH_SIZE = 256
 
-    corpus('data/LIGAND_RAW.tsv', 'data/ligand', suffix='tsv')
-    corpus('data/chembl_27.sdf.gz', 'data/chembl')
+    corpus('data/chembl_30_1000.smi', 'data/chembl', suffix='smi')
+    #corpus('data/chembl_27.sdf.gz', 'data/chembl')
 
-    voc = utils.VocGraph('data/voc_graph.txt', n_frags=4)
-    voc_smi = utils.VocSmiles('data/voc_smiles.txt')
+    #voc = utils.VocGraph('data/voc_graph.txt', n_frags=4)
+    voc_smi = Voc('data/voc_smiles.txt')
     out = 'data/%s_%s_%s' % (dataset, 'mf' if is_mf else 'sf', method)
     pair_frags('data/chembl_corpus.txt', out + '.txt', method=method, is_mf=is_mf)
-    pair_frags('data/ligand_corpus.txt', out + '.txt', method=method, is_mf=is_mf)
+    # pair_frags('data/ligand_corpus.txt', out + '.txt', method=method, is_mf=is_mf)
     train_test_split('data/chembl_mf_brics.txt', 'data/chembl_mf_brics')
-    train_test_split('data/ligand_mf_brics.txt', 'data/ligand_mf_brics')
-    for ds in ['train']:
-        pair_graph_encode(out + '_%s.txt' % ds, voc, out + '_%s_code.txt' % ds)
+    # train_test_split('data/ligand_mf_brics.txt', 'data/ligand_mf_brics')
+    for ds in ['train', 'test']:
+        # pair_graph_encode(out + '_%s.txt' % ds, voc, out + '_%s_code.txt' % ds)
         pair_smiles_encode(out + '_%s.txt' % ds, voc_smi, out + '_%s_smi.txt' % ds)
-    pos_neg_split()
+    # pos_neg_split()
