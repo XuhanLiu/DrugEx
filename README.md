@@ -24,7 +24,7 @@ Workflow
 ========
 ![Fig1](figures/fig_1.png)
 
-Deep learning Archietectures
+Deep learning Architectures
 ====================
 ![Fig2](figures/fig_2.png)
 
@@ -81,11 +81,11 @@ For designing the novel drug molecules with SMILES representation, you should do
 
 3. train_graph.py:
 
-    Pre-training an training the graph transformer model with graph representation under supvervision and reinforcement learning frameworks, respectively.
+    Pre-training an training the graph transformer model with graph representation under supervision and reinforcement learning frameworks, respectively.
     
 4. train_smiles.py: 
 
-    Pre-training an training the SMILES-based deep learning models with SMILES representation under supvervision and reinforcement learning frameworks, respectively.
+    Pre-training an training the SMILES-based deep learning models with SMILES representation under supervision and reinforcement learning frameworks, respectively.
     
     
 5. designer.py:
@@ -120,12 +120,12 @@ In addition, this toolkit also provides some other scripts for definition of spe
 
 5. utils/modifier.py
 
-    It provides a variety of desirability function to normalize the scoring furntions. 
-    For more details, please check [GuacaMol](https://pubs.acs.org/doi/10.1021/acs.jcim.8b00839) benchemark.
+    It provides a variety of desirability function to normalize the scoring functions. 
+    For more details, please check [GuacaMol](https://pubs.acs.org/doi/10.1021/acs.jcim.8b00839) benchmark.
 
 6. utils/objective.py
 
-    It provides the construction of different scoring functions, including similary score,
+    It provides the construction of different scoring functions, including similarly score,
     chemical properties, QSAR modelling, etc. Moreoever, it can also integrate multiple 
     objective into an environment to calculate reward for the agent. 
 
